@@ -1,0 +1,796 @@
+[
+ {
+  "id": "fullbody",
+  "name": "Full Body",
+  "days": [
+   {
+    "name": "Full Body",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Bench Press",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 3
+     },
+     {
+      "name": "Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "Full Body",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Bench Press",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 3
+     },
+     {
+      "name": "Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     }
+    ],
+    "weekday": 3
+   },
+   {
+    "name": "Full Body",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Bench Press",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 3
+     },
+     {
+      "name": "Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     }
+    ],
+    "weekday": 5
+   }
+  ]
+ },
+ {
+  "id": "ppl",
+  "name": "Push Pull Legs",
+  "days": [
+   {
+    "name": "Push",
+    "exercises": [
+     {
+      "name": "Barbell Bench Press",
+      "sets": 4
+     },
+     {
+      "name": "Incline Dumbbell Press",
+      "sets": 3
+     },
+     {
+      "name": "Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Lateral Raise",
+      "sets": 3
+     },
+     {
+      "name": "Triceps Pushdown",
+      "sets": 3
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "Pull",
+    "exercises": [
+     {
+      "name": "Pull Up",
+      "sets": 4
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 4
+     },
+     {
+      "name": "Lat Pulldown",
+      "sets": 3
+     },
+     {
+      "name": "Face Pull",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Curl",
+      "sets": 3
+     }
+    ],
+    "weekday": 3
+   },
+   {
+    "name": "Legs",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 4
+     },
+     {
+      "name": "Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Leg Press",
+      "sets": 3
+     },
+     {
+      "name": "Leg Curl",
+      "sets": 3
+     },
+     {
+      "name": "Standing Calf Raise",
+      "sets": 4
+     }
+    ],
+    "weekday": 5
+   }
+  ]
+ },
+ {
+  "id": "upperlower",
+  "name": "Upper Lower",
+  "days": [
+   {
+    "name": "Upper",
+    "exercises": [
+     {
+      "name": "Barbell Bench Press",
+      "sets": 4
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 4
+     },
+     {
+      "name": "Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Lat Pulldown",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Curl",
+      "sets": 3
+     },
+     {
+      "name": "Triceps Pushdown",
+      "sets": 3
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "Lower",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 4
+     },
+     {
+      "name": "Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Leg Press",
+      "sets": 3
+     },
+     {
+      "name": "Leg Curl",
+      "sets": 3
+     },
+     {
+      "name": "Standing Calf Raise",
+      "sets": 4
+     }
+    ],
+    "weekday": 2
+   },
+   {
+    "name": "Upper",
+    "exercises": [
+     {
+      "name": "Incline Dumbbell Press",
+      "sets": 4
+     },
+     {
+      "name": "Pull Up",
+      "sets": 4
+     },
+     {
+      "name": "Dumbbell Standing Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Seated Cable Row",
+      "sets": 3
+     },
+     {
+      "name": "Hammer Curl",
+      "sets": 3
+     },
+     {
+      "name": "Triceps Dip",
+      "sets": 3
+     }
+    ],
+    "weekday": 4
+   },
+   {
+    "name": "Lower",
+    "exercises": [
+     {
+      "name": "Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Front Squat",
+      "sets": 3
+     },
+     {
+      "name": "Leg Extension",
+      "sets": 3
+     },
+     {
+      "name": "Leg Curl",
+      "sets": 3
+     },
+     {
+      "name": "Standing Calf Raise",
+      "sets": 4
+     }
+    ],
+    "weekday": 5
+   }
+  ]
+ },
+ {
+  "id": "abcd",
+  "name": "ABCD Split",
+  "days": [
+   {
+    "name": "A · Chest & Triceps",
+    "exercises": [
+     {
+      "name": "Barbell Bench Press",
+      "sets": 4
+     },
+     {
+      "name": "Incline Dumbbell Press",
+      "sets": 3
+     },
+     {
+      "name": "Cable Fly",
+      "sets": 3
+     },
+     {
+      "name": "Triceps Pushdown",
+      "sets": 3
+     },
+     {
+      "name": "Skull Crushers",
+      "sets": 3
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "B · Back & Biceps",
+    "exercises": [
+     {
+      "name": "Pull Up",
+      "sets": 4
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 4
+     },
+     {
+      "name": "Lat Pulldown",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Curl",
+      "sets": 3
+     },
+     {
+      "name": "Hammer Curl",
+      "sets": 3
+     }
+    ],
+    "weekday": 2
+   },
+   {
+    "name": "C · Legs",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 4
+     },
+     {
+      "name": "Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Leg Press",
+      "sets": 3
+     },
+     {
+      "name": "Leg Curl",
+      "sets": 3
+     },
+     {
+      "name": "Standing Calf Raise",
+      "sets": 4
+     }
+    ],
+    "weekday": 4
+   },
+   {
+    "name": "D · Shoulders & Abs",
+    "exercises": [
+     {
+      "name": "Overhead Press",
+      "sets": 4
+     },
+     {
+      "name": "Lateral Raise",
+      "sets": 3
+     },
+     {
+      "name": "Face Pull",
+      "sets": 3
+     },
+     {
+      "name": "Hanging Leg Raise",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     }
+    ],
+    "weekday": 5
+   }
+  ]
+ },
+ {
+  "id": "abcde",
+  "name": "ABCDE Split",
+  "days": [
+   {
+    "name": "A · Chest",
+    "exercises": [
+     {
+      "name": "Barbell Bench Press",
+      "sets": 4
+     },
+     {
+      "name": "Incline Dumbbell Press",
+      "sets": 4
+     },
+     {
+      "name": "Cable Fly",
+      "sets": 3
+     },
+     {
+      "name": "Triceps Dip",
+      "sets": 3
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "B · Back",
+    "exercises": [
+     {
+      "name": "Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Pull Up",
+      "sets": 4
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 4
+     },
+     {
+      "name": "Seated Cable Row",
+      "sets": 3
+     }
+    ],
+    "weekday": 2
+   },
+   {
+    "name": "C · Legs",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 4
+     },
+     {
+      "name": "Leg Press",
+      "sets": 4
+     },
+     {
+      "name": "Leg Extension",
+      "sets": 3
+     },
+     {
+      "name": "Leg Curl",
+      "sets": 3
+     },
+     {
+      "name": "Standing Calf Raise",
+      "sets": 4
+     }
+    ],
+    "weekday": 3
+   },
+   {
+    "name": "D · Shoulders",
+    "exercises": [
+     {
+      "name": "Overhead Press",
+      "sets": 4
+     },
+     {
+      "name": "Dumbbell Standing Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Lateral Raise",
+      "sets": 4
+     },
+     {
+      "name": "Face Pull",
+      "sets": 3
+     }
+    ],
+    "weekday": 4
+   },
+   {
+    "name": "E · Arms",
+    "exercises": [
+     {
+      "name": "Barbell Curl",
+      "sets": 4
+     },
+     {
+      "name": "Skull Crushers",
+      "sets": 4
+     },
+     {
+      "name": "Hammer Curl",
+      "sets": 3
+     },
+     {
+      "name": "Triceps Pushdown",
+      "sets": 3
+     }
+    ],
+    "weekday": 5
+   }
+  ]
+ },
+ {
+  "id": "stronglifts",
+  "name": "StrongLifts 5×5",
+  "days": [
+   {
+    "name": "Workout A",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 5
+     },
+     {
+      "name": "Barbell Bench Press",
+      "sets": 5
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 5
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "Workout B",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 5
+     },
+     {
+      "name": "Overhead Press",
+      "sets": 5
+     },
+     {
+      "name": "Deadlift",
+      "sets": 1
+     }
+    ],
+    "weekday": 3
+   }
+  ]
+ },
+ {
+  "id": "startingstrength",
+  "name": "Starting Strength",
+  "days": [
+   {
+    "name": "Workout A",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Bench Press",
+      "sets": 3
+     },
+     {
+      "name": "Deadlift",
+      "sets": 1
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "Workout B",
+    "exercises": [
+     {
+      "name": "Barbell Squat",
+      "sets": 3
+     },
+     {
+      "name": "Overhead Press",
+      "sets": 3
+     },
+     {
+      "name": "Barbell Row",
+      "sets": 3
+     }
+    ],
+    "weekday": 3
+   }
+  ]
+ },
+ {
+  "id": "rr",
+  "name": "Recommended Routine",
+  "days": [
+   {
+    "name": "Recommended Routine",
+    "exercises": [
+     {
+      "name": "Negative Pull-up",
+      "sets": 3
+     },
+     {
+      "name": "Bodyweight Squat",
+      "sets": 3
+     },
+     {
+      "name": "Negative Dip",
+      "sets": 3
+     },
+     {
+      "name": "Bodyweight Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Incline Row",
+      "sets": 3
+     },
+     {
+      "name": "Incline Push-up",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     },
+     {
+      "name": "Banded Pallof Press",
+      "sets": 3
+     },
+     {
+      "name": "Reverse Hyperextension",
+      "sets": 3
+     }
+    ],
+    "weekday": 1
+   },
+   {
+    "name": "Recommended Routine",
+    "exercises": [
+     {
+      "name": "Negative Pull-up",
+      "sets": 3
+     },
+     {
+      "name": "Bodyweight Squat",
+      "sets": 3
+     },
+     {
+      "name": "Negative Dip",
+      "sets": 3
+     },
+     {
+      "name": "Bodyweight Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Incline Row",
+      "sets": 3
+     },
+     {
+      "name": "Incline Push-up",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     },
+     {
+      "name": "Banded Pallof Press",
+      "sets": 3
+     },
+     {
+      "name": "Reverse Hyperextension",
+      "sets": 3
+     }
+    ],
+    "weekday": 3
+   },
+   {
+    "name": "Recommended Routine",
+    "exercises": [
+     {
+      "name": "Negative Pull-up",
+      "sets": 3
+     },
+     {
+      "name": "Bodyweight Squat",
+      "sets": 3
+     },
+     {
+      "name": "Negative Dip",
+      "sets": 3
+     },
+     {
+      "name": "Bodyweight Romanian Deadlift",
+      "sets": 3
+     },
+     {
+      "name": "Incline Row",
+      "sets": 3
+     },
+     {
+      "name": "Incline Push-up",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     },
+     {
+      "name": "Banded Pallof Press",
+      "sets": 3
+     },
+     {
+      "name": "Reverse Hyperextension",
+      "sets": 3
+     }
+    ],
+    "weekday": 5
+   }
+  ]
+ },
+ {
+  "id": "home",
+  "name": "No Kit",
+  "days": [
+   {
+    "name": "Home A",
+    "exercises": [
+     {
+      "name": "Push Up",
+      "sets": 3
+     },
+     {
+      "name": "Pull Up",
+      "sets": 3
+     },
+     {
+      "name": "Bodyweight Squat",
+      "sets": 3
+     },
+     {
+      "name": "Plank",
+      "sets": 3
+     }
+    ],
+    "weekday": 2
+   },
+   {
+    "name": "Home B",
+    "exercises": [
+     {
+      "name": "Triceps Dip",
+      "sets": 3
+     },
+     {
+      "name": "Chin Up",
+      "sets": 3
+     },
+     {
+      "name": "Lunge",
+      "sets": 3
+     },
+     {
+      "name": "Hanging Leg Raise",
+      "sets": 3
+     }
+    ],
+    "weekday": 5
+   }
+  ]
+ }
+]
