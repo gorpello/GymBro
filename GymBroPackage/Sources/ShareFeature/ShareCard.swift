@@ -7,8 +7,12 @@ public struct ShareCard {
     public struct State: Equatable {
         public var kind: Kind = .streak
         
+        // TODO: Remove templates elements
+        // swiftlint:disable line_length
         public var activity: [[Int]] = [[0, 4, 0, 0, 0, 4, 4], [4, 0, 4, 4, 0, 0, 0], [4, 0, 4, 0, 3, 0, 4], [0, 3, 0, 4, 4, 4, 0], [0, 4, 4, 0, 0, 4, 0], [4, 0, 0, 4, 2, 0, 4], [0, 4, 0, 4, 0, 4, 0], [4, 4, 0, 0, 4, 0, 4], [0, 0, 4, 3, 0, 4, 4], [4, 0, 4, 4, 4, 0, 0], [0, 4, 0, 4, 0, 4, 4], [0, 0, 0, 4, 4, 4, 4]]
         public var muscleLevels: [String: Int] = ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 4, "hamstrings": 2, "glutes": 3, "back": 3, "biceps": 1, "calves": 1]
+        // swiftlint:enable line_length
+        
         public var streak: Int = 4
         
         public init() {}

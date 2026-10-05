@@ -47,13 +47,18 @@ in the GymBro target's *Signing & Capabilities* tab. Please don't commit that ch
   swift format --in-place --recursive GymBroPackage/Sources GymBroPackage/Tests
   ```
 
+- **While you type:** Xcode formats the current file with swift-format using the repo config:
+  Editor → Structure → **Format File with 'swift-format'** (⌃⇧I).
+- **While you build:** SwiftLint runs as a build plugin on every package target and shows
+  warnings inline. Its rules live in `GymBroPackage/.swiftlint.yml`. The first build asks you to
+  **Trust & Enable** the SwiftLint plugin.
 - Match the code around you: naming, comment density and file layout.
 
 ## Tests
 
 Reducer tests live in `GymBroPackage/Tests` and use Swift Testing with TCA's `TestStore`.
 Add or update a test when you change a reducer's behaviour. Run them from Xcode (⌘U on the
-**AppFeature** scheme) or let CI run them on your pull request.
+**AppFeature** scheme) or let Xcode Cloud run them on your pull request.
 
 ## Commits and pull requests
 
@@ -61,7 +66,7 @@ Add or update a test when you change a reducer's behaviour. Run them from Xcode 
 - Use [Conventional Commits](https://www.conventionalcommits.org): `feat:`, `fix:`, `docs:`,
   `refactor:`, `test:`, `chore:`. The release notes are generated from them.
 - Keep pull requests small and focused, and fill in the template.
-- CI must pass: build, tests and format check.
+- Checks must pass: the Xcode Cloud build and tests, and the GitHub Actions manifest check.
 
 ## Licence
 

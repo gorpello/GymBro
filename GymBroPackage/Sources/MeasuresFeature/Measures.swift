@@ -7,6 +7,8 @@ public struct Measures {
     public struct State: Equatable {
         @Presents public var entry: MeasureEntry.State?
         
+        // TODO: Remove templates elements
+        // swiftlint:disable line_length
         public var rows: [MeasureRowState] = [
             .init(id: "neck", history: [.init(id: "1", date: "Aug 1", value: 38.5), .init(id: "2", date: "Sep 1", value: 38)]),
             .init(id: "shoulders", history: []),
@@ -19,6 +21,8 @@ public struct Measures {
             .init(id: "calf", history: []),
             .init(id: "bodyfat", history: [.init(id: "1", date: "Sep 1", value: 15), .init(id: "2", date: "Sep 19", value: 14)]),
         ]
+        // swiftlint:enable line_length
+        
         public var unit: String = "cm"
         
         public var readingCount: Int { rows.map(\.history.count).reduce(0, +) }
