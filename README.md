@@ -34,7 +34,7 @@ Tap the muscles you want to train, log your sets and watch your numbers go up.
 
 ## What it does
 
-> **Status:** the port is in progress. Screens are built in SwiftUI with dummy data in
+> **Status:** the port is in progress ([roadmap](https://github.com/users/gorpello/projects/1)). Screens are built in SwiftUI with dummy data in
 > each feature's `State`; persistence with SQLiteData is being wired in feature by feature.
 
 <table>
@@ -168,6 +168,47 @@ exercise names in `ExerciseCatalog.xcstrings`. They were converted from the Andr
 app's ARB files, so the same 17 languages are available. Edit them in Xcode's String
 Catalog editor.
 
+## Development workflow
+
+Work is planned and tracked in the open on the
+[GymBro Roadmap](https://github.com/users/gorpello/projects/1) project board.
+Every change, however small, goes through the same loop:
+
+```mermaid
+flowchart LR
+    A[Issue] --> B[Branch]
+    B --> C[Commits]
+    C --> D[Pull request]
+    D --> E{Checks}
+    E -- fail --> C
+    E -- pass --> F[Squash merge]
+    F --> G[Changelog]
+    G --> H[Release tag]
+```
+
+1. **Issue.** Each task is an issue with a "done when" line, an `area:` label and a milestone.
+   Big features are a parent issue with sub-issues.
+2. **Branch.** One branch per issue, named `type/short-name`: `feat/db-schema`,
+   `fix/ci-linux-checks`, `docs/adr`.
+3. **Commits.** Small, focused [Conventional Commits](https://www.conventionalcommits.org):
+   `feat(db): add workout table`, `test(session): cover finish flow`.
+4. **Pull request.** Links its issue (`Closes #12`), explains what and why, and shows
+   screenshots for UI changes.
+5. **Checks.** The package manifest and format checks run on GitHub Actions; the build and
+   tests run on Xcode Cloud. `main` is protected and only accepts green pull requests.
+6. **Squash merge.** One commit per pull request on `main`, so history reads as a list of
+   features and fixes.
+7. **Changelog and release.** Each PR updates [CHANGELOG.md](CHANGELOG.md). Finishing a
+   milestone means a tag (`v0.2.0`) and a GitHub release with notes and screenshots.
+
+| Board column | Meaning |
+|---|---|
+| Backlog | Not planned yet |
+| Ready | Planned for the current milestone |
+| In progress | A branch exists |
+| In review | A pull request is open |
+| Done | Merged or closed |
+
 ## Contributing
 
 Bug reports, ideas and pull requests are welcome. For anything big, open an issue first.
@@ -177,6 +218,7 @@ everyone taking part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
 - Found a security problem? See [SECURITY.md](SECURITY.md) and report it privately.
 - What the app does with your data: [PRIVACY.md](PRIVACY.md).
 - What changed between versions: [CHANGELOG.md](CHANGELOG.md).
+- What's done and what's next: the [GymBro Roadmap](https://github.com/users/gorpello/projects/1) board.
 
 ## License
 
