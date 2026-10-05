@@ -10,6 +10,8 @@ public struct ProgressOverview {
         public var muscleRange: MuscleRange = .days7
         
         /// Consistency grid, `activity[week][weekday]`, levels 0…4.
+        // TODO: Remove templates elements
+        // swiftlint:disable line_length
         public var activity: [[Int]] = [[0, 4, 0, 0, 0, 4, 4], [4, 0, 4, 4, 0, 0, 0], [4, 0, 4, 0, 3, 0, 4], [0, 3, 0, 4, 4, 4, 0], [0, 4, 4, 0, 0, 4, 0], [4, 0, 0, 4, 2, 0, 4], [0, 4, 0, 4, 0, 4, 0], [4, 4, 0, 0, 4, 0, 4], [0, 0, 4, 3, 0, 4, 4], [4, 0, 4, 4, 4, 0, 0], [0, 4, 0, 4, 0, 4, 4], [0, 0, 0, 4, 4, 4, 4]]
         public var measureRows: [MeasureRow] = [
             .init(id: "neck", value: "38", unit: "cm"),
@@ -19,10 +21,14 @@ public struct ProgressOverview {
             .init(id: "thigh", value: nil, unit: "cm"),
             .init(id: "bodyfat", value: "14", unit: "%"),
         ]
+        
         /// Heat level 0…4 per muscle id for the last 7 days.
         public var muscleLevels7: [String: Int] = ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 4, "hamstrings": 2, "glutes": 3, "back": 3, "biceps": 1, "calves": 1]
         /// Heat level 0…4 per muscle id for the last 30 days.
         public var muscleLevels30: [String: Int] = ["chest": 4, "triceps": 4, "shoulders": 3, "quads": 4, "hamstrings": 3, "glutes": 4, "back": 4, "biceps": 3, "calves": 2, "abdomen": 1, "trapezius": 2, "forearm": 1]
+        // swiftlint:enable line_length
+        
+        
         /// Recovery level 0 (fresh) … 4 (fatigued) per muscle id.
         public var recoveryLevels: [String: Int] = ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 1]
         public var recoveryPercent: Int = 72
@@ -77,7 +83,7 @@ public struct ProgressOverview {
     
     public var body: some Reducer<State, Action> {
         BindingReducer()
-        Reduce { state, action in
+        Reduce { _, action in
             switch action {
             case .binding, .delegate:
                 return .none

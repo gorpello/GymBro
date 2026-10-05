@@ -13,10 +13,14 @@ public struct ExerciseLibrary {
         
         public var favouriteCount: Int = 2
         public var libraryCount: Int = 551
+        
+        // TODO: Remove templates elements
+        // swiftlint:disable line_length
         public var sections: [ExerciseSection] = [
             .init(id: "chest", rows: [.init(id: "EIeI8Vf", art: "bench-press", detail: "Barbell · Intermediate", isFavourite: true, name: "Barbell Bench Press"), .init(id: "SpYC0Kp", art: "dumbbell-bench-press", detail: "Dumbbell · Intermediate", isFavourite: false, name: "Dumbbell Bench Press"), .init(id: "3TZduzM", art: "incline-bench-press", detail: "Barbell · Intermediate", isFavourite: false, name: "Barbell Incline Bench Press"), .init(id: "9WTm7dq", art: "chest-dip", detail: "Bodyweight · Intermediate", isFavourite: false, name: "Chest Dip")]),
             .init(id: "back", rows: [.init(id: "pullup", art: "pull-up", detail: "Bodyweight · Intermediate", isFavourite: true, name: "Pull-up"), .init(id: "row", art: "barbell-row", detail: "Barbell · Intermediate", isFavourite: false, name: "Barbell Row")]),
         ]
+        // swiftlint:enable line_length
         
         public init() {}
     }

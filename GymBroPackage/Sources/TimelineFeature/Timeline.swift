@@ -9,10 +9,15 @@ public struct Timeline {
         public var groupEvery: Int = 30
         public var mode: Mode = .photos
         
+        // TODO: Remove templates elements
+        // swiftlint:disable line_length
         public var bodyWindows: [BodyWindow] = [
             .init(id: "Aug 21 – Sep 19", levels: ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 4, "hamstrings": 2, "glutes": 3, "back": 3, "biceps": 1, "calves": 1], sessions: 14),
             .init(id: "Jul 22 – Aug 20", levels: ["chest": 3, "quads": 4, "back": 2, "glutes": 3, "shoulders": 1], sessions: 13),
         ]
+        // TODO: Remove templates elements
+        // swiftlint:enable line_length
+        
         public var photoDays: [PhotoDay] = [
             .init(id: "d3", dayNumber: 90, date: "Sep 19", poses: ["front", "side", "back"]),
             .init(id: "d2", dayNumber: 45, date: "Aug 5", poses: ["front", "back"]),

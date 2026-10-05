@@ -7,7 +7,11 @@ public struct Home {
     @ObservableState
     public struct State: Equatable {
         /// Last twelve weeks of activity, `activity[week][weekday]`, levels 0…4.
+        // TODO: Remove templates elements
+        // swiftlint:disable line_length
         public var activity: [[Int]] = [[0, 4, 0, 0, 0, 4, 4], [4, 0, 4, 4, 0, 0, 0], [4, 0, 4, 0, 3, 0, 4], [0, 3, 0, 4, 4, 4, 0], [0, 4, 4, 0, 0, 4, 0], [4, 0, 0, 4, 2, 0, 4], [0, 4, 0, 4, 0, 4, 0], [4, 4, 0, 0, 4, 0, 4], [0, 0, 4, 3, 0, 4, 4], [4, 0, 4, 4, 4, 0, 0], [0, 4, 0, 4, 0, 4, 4], [0, 0, 0, 4, 4, 4, 4]]
+        // swiftlint:enable line_length
+
         public var dateTitle: String = "Saturday, Sep 19"
         public var noteCount: Int = 3
         public var prCount: Int = 3
