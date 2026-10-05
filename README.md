@@ -113,7 +113,6 @@ GymBro/
 ├── GymBro/                     App target (GymBroApp.swift, Assets.xcassets)
 ├── GymBro.xcodeproj
 ├── GymBroWorkspace.xcworkspace Open this one
-├── ci_scripts/                 Xcode Cloud hooks
 └── GymBroPackage/
     ├── Package.swift
     ├── Sources/
