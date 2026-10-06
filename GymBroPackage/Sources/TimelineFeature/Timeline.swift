@@ -15,7 +15,6 @@ public struct Timeline {
             .init(id: "Aug 21 – Sep 19", levels: ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 4, "hamstrings": 2, "glutes": 3, "back": 3, "biceps": 1, "calves": 1], sessions: 14),
             .init(id: "Jul 22 – Aug 20", levels: ["chest": 3, "quads": 4, "back": 2, "glutes": 3, "shoulders": 1], sessions: 13),
         ]
-        // TODO: Remove templates elements
         // swiftlint:enable line_length
         
         public var photoDays: [PhotoDay] = [
