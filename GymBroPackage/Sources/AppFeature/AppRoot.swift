@@ -1,10 +1,16 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import SwiftUI
 
 extension AppFeature {
-    /// One-time setup at launch: registers Nunito and styles navigation bars.
+    /// One-time setup at launch: opens the database, registers Nunito and styles navigation bars.
     @MainActor public static func bootstrap() {
+        prepareDependencies {
+            // If there are an error on the database the user can't do nothing.
+            // swiftlint:disable next force_try
+            try! $0.bootstrapDatabase()
+        }
         GymFont.register()
         GymAppearance.apply()
     }

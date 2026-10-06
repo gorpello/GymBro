@@ -46,7 +46,6 @@ let package = Package(
     .package(url: "https://github.com/phosphor-icons/swift", from: "2.0.0"),
     .package(url: "https://github.com/pointfreeco/sqlite-data", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.20.0"),
-    .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.0"),
   ],
   targets: [
     // MARK: - App
@@ -316,8 +315,15 @@ let package = Package(
 )
 
 // SwiftLint runs on every build of every target, so warnings show up inline in Xcode.
-for target in package.targets where target.type == .regular || target.type == .test {
-  target.plugins = (target.plugins ?? []) + [
-    .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
-  ]
+// Skipped on CI (Xcode Cloud and GitHub Actions set `CI`): build plugins need a manual
+// "Trust & Enable" there, and GitHub Actions already runs SwiftLint as its own job.
+if Context.environment["CI"] == nil {
+  package.dependencies.append(
+    .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.0")
+  )
+  for target in package.targets where target.type == .regular || target.type == .test {
+    target.plugins = (target.plugins ?? []) + [
+      .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
+    ]
+  }
 }
