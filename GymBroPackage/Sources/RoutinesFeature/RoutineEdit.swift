@@ -10,7 +10,7 @@ public struct RoutineEdit {
     public struct State: Equatable {
         public let id: String?
         public var searchText = ""
-        
+
         /// Exercises available to add.
         public var library: [RoutineLibraryRow] = [
             .init(id: "pec", art: "pec-deck", detail: "Chest · Machine", name: "Pec Deck"),
@@ -19,7 +19,9 @@ public struct RoutineEdit {
         ]
         public var exercises: [RoutineExerciseRow] = [
             .init(id: "EIeI8Vf", art: "bench-press", name: "Barbell Bench Press", sets: 4, chained: false),
-            .init(id: "ns0SIbU", art: "incline-dumbbell-press", name: "Dumbbell Incline Bench Press", sets: 3, chained: true),
+            .init(
+                id: "ns0SIbU", art: "incline-dumbbell-press", name: "Dumbbell Incline Bench Press", sets: 3,
+                chained: true),
             .init(id: "ohp", art: "overhead-press", name: "Overhead Press", sets: 3, chained: false),
             .init(id: "tri1", art: "rope-tricep-pushdown", name: "Rope Triceps Pushdown", sets: 3, chained: false),
         ]
@@ -27,12 +29,12 @@ public struct RoutineEdit {
         public var name: String = "Push"
         /// Weekdays (0 = Monday) this routine is planned on.
         public var weekdays: Set<Int> = [0, 5]
-        
+
         public init(id: String?) {
             self.id = id
         }
     }
-    
+
     public enum Action: BindableAction {
         case addExerciseTapped(id: String)
         case binding(BindingAction<State>)
@@ -44,23 +46,24 @@ public struct RoutineEdit {
         case startButtonTapped
         case supersetToggled(id: String)
         case weekdayTapped(Int)
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     @Dependency(\.dismiss) var dismiss
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
             switch action {
             case let .addExerciseTapped(id):
                 guard let row = state.library.first(where: { $0.id == id }) else { return .none }
-                state.exercises.append(RoutineExerciseRow(id: row.id, art: row.art, name: row.name, sets: 3, chained: false))
+                state.exercises.append(
+                    RoutineExerciseRow(id: row.id, art: row.art, name: row.name, sets: 3, chained: false))
                 return .none
             case .binding, .delegate:
                 return .none
@@ -97,7 +100,7 @@ public struct RoutineExerciseRow: Equatable, Identifiable, Sendable {
     public var sets: Int
     /// Chained to the next exercise as a superset.
     public var chained: Bool
-    
+
     public init(id: String, art: String, name: String, sets: Int, chained: Bool) {
         self.id = id
         self.art = art
@@ -112,7 +115,7 @@ public struct RoutineLibraryRow: Equatable, Identifiable, Sendable {
     public var art: String
     public var detail: String
     public var name: String
-    
+
     public init(id: String, art: String, detail: String, name: String) {
         self.id = id
         self.art = art

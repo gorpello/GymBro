@@ -18,16 +18,16 @@ public struct Awards {
             .init(id: "tonnes100", name: "Hundred tonnes", line: "Lift 100 t in total", date: nil),
             .init(id: "workouts365", name: "A year of it", line: "Log 365 workouts", date: nil),
         ]
-        
+
         public init() {}
     }
-    
+
     public enum Action {
         case medalTapped(id: String)
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Reduce { _, action in
             switch action {
@@ -44,7 +44,7 @@ public struct AwardRow: Equatable, Identifiable, Sendable {
     public var name: String
     public var line: String
     public var date: String?
-    
+
     public init(id: String, name: String, line: String, date: String?) {
         self.id = id
         self.name = name

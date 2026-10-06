@@ -31,10 +31,10 @@ public struct Preferences {
         /// `kg` or `lb`.
         public var units: String = "kg"
         public var weekStart: String = "Monday"
-        
+
         public init() {}
     }
-    
+
     public enum Action: BindableAction {
         case aboutButtonTapped
         case binding(BindingAction<State>)
@@ -52,14 +52,14 @@ public struct Preferences {
         case restIncrementButtonTapped
         case starButtonTapped
         case stravaButtonTapped
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
@@ -67,8 +67,8 @@ public struct Preferences {
             case .aboutButtonTapped:
                 return .send(.delegate(.navigate(.about)))
             case .binding, .buyCoffeeButtonTapped, .delegate, .deleteAllButtonTapped, .exportBackupButtonTapped,
-                    .exportCsvButtonTapped, .importBackupButtonTapped, .importFromAppButtonTapped, .reportBugButtonTapped,
-                    .requestFeatureButtonTapped, .starButtonTapped:
+                .exportCsvButtonTapped, .importBackupButtonTapped, .importFromAppButtonTapped, .reportBugButtonTapped,
+                .requestFeatureButtonTapped, .starButtonTapped:
                 return .none
             case .placesButtonTapped:
                 return .send(.delegate(.navigate(.places)))

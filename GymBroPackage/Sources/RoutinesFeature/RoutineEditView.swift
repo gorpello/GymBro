@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct RoutineEditView: View {
     @Bindable var store: StoreOf<RoutineEdit>
-    
+
     public init(store: StoreOf<RoutineEdit>) {
         self.store = store
     }
-    
+
     public var body: some View {
         List {
             Section {
@@ -57,7 +57,9 @@ public struct RoutineEditView: View {
                     exerciseRow(row)
                         .listRowBackground(GymColor.bgRaised)
                         .swipeActions {
-                            Button(L10n.removeFromRoutine, role: .destructive) { store.send(.removeExerciseTapped(id: row.id)) }
+                            Button(L10n.removeFromRoutine, role: .destructive) {
+                                store.send(.removeExerciseTapped(id: row.id))
+                            }
                         }
                 }
                 .onMove { store.send(.moveExercises(from: $0, to: $1)) }
@@ -106,7 +108,7 @@ public struct RoutineEditView: View {
             .padding(.bottom, 8)
         }
     }
-    
+
     private func exerciseRow(_ row: RoutineExerciseRow) -> some View {
         HStack(spacing: 12) {
             ExerciseArtView(art: row.art)

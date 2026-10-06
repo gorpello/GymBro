@@ -12,41 +12,69 @@ public struct Session {
         public var isLocked = false
         public var isPaused = false
         public var showsOverview = false
-        
+
         public var elapsed: String = "00:03"
-        
+
         // TODO: Remove templates elements
         // swiftlint:disable line_length
         public var exercises: [SessionExercise] = [
-            .init(id: "EIeI8Vf", art: "bench-press", last: "90×8 · 90×8 · 92.5×6 · 92.5×6", muscle: "chest", name: "Barbell Bench Press", next: "92.5 kg × 8", sets: [.init(id: 1, kind: .normal, reps: 8, weight: 90, done: true), .init(id: 2, kind: .normal, reps: 8, weight: 90, done: true), .init(id: 3, kind: .normal, reps: 6, weight: 92.5, done: false), .init(id: 4, kind: .normal, reps: 6, weight: 92.5, done: false)]),
-            .init(id: "ns0SIbU", art: "incline-dumbbell-press", last: "30×10 · 30×10 · 30×9", muscle: "chest", name: "Dumbbell Incline Bench Press", next: "30 kg × 10", sets: [.init(id: 1, kind: .normal, reps: 10, weight: 30, done: false), .init(id: 2, kind: .normal, reps: 10, weight: 30, done: false), .init(id: 3, kind: .normal, reps: 10, weight: 30, done: false)]),
-            .init(id: "ohp", art: "overhead-press", last: nil, muscle: "shoulders", name: "Overhead Press", next: nil, sets: [.init(id: 1, kind: .normal, reps: 8, weight: 50, done: false), .init(id: 2, kind: .normal, reps: 8, weight: 50, done: false), .init(id: 3, kind: .normal, reps: 8, weight: 50, done: false)]),
-            .init(id: "tri1", art: "rope-tricep-pushdown", last: "25×12 · 25×12", muscle: "triceps", name: "Rope Triceps Pushdown", next: "27.5 kg × 12", sets: [.init(id: 1, kind: .normal, reps: 12, weight: 25, done: false), .init(id: 2, kind: .normal, reps: 12, weight: 25, done: false)]),
+            .init(
+                id: "EIeI8Vf", art: "bench-press", last: "90×8 · 90×8 · 92.5×6 · 92.5×6", muscle: "chest",
+                name: "Barbell Bench Press", next: "92.5 kg × 8",
+                sets: [
+                    .init(id: 1, kind: .normal, reps: 8, weight: 90, done: true),
+                    .init(id: 2, kind: .normal, reps: 8, weight: 90, done: true),
+                    .init(id: 3, kind: .normal, reps: 6, weight: 92.5, done: false),
+                    .init(id: 4, kind: .normal, reps: 6, weight: 92.5, done: false),
+                ]),
+            .init(
+                id: "ns0SIbU", art: "incline-dumbbell-press", last: "30×10 · 30×10 · 30×9", muscle: "chest",
+                name: "Dumbbell Incline Bench Press", next: "30 kg × 10",
+                sets: [
+                    .init(id: 1, kind: .normal, reps: 10, weight: 30, done: false),
+                    .init(id: 2, kind: .normal, reps: 10, weight: 30, done: false),
+                    .init(id: 3, kind: .normal, reps: 10, weight: 30, done: false),
+                ]),
+            .init(
+                id: "ohp", art: "overhead-press", last: nil, muscle: "shoulders", name: "Overhead Press", next: nil,
+                sets: [
+                    .init(id: 1, kind: .normal, reps: 8, weight: 50, done: false),
+                    .init(id: 2, kind: .normal, reps: 8, weight: 50, done: false),
+                    .init(id: 3, kind: .normal, reps: 8, weight: 50, done: false),
+                ]),
+            .init(
+                id: "tri1", art: "rope-tricep-pushdown", last: "25×12 · 25×12", muscle: "triceps",
+                name: "Rope Triceps Pushdown", next: "27.5 kg × 12",
+                sets: [
+                    .init(id: 1, kind: .normal, reps: 12, weight: 25, done: false),
+                    .init(id: 2, kind: .normal, reps: 12, weight: 25, done: false),
+                ]),
         ]
         // swiftlint:enable line_length
-        
+
         /// Rest countdown ("2:30"); `nil` when not resting.
         public var restRemaining: String? = "2:30"
         /// Rest progress from 1 (just started) to 0 (over).
         public var restProgress: Double = 0.85
-        
+
         // TODO: Remove templates elements
         // swiftlint:disable line_length
-        public var summary: SessionSummary? = SessionSummary(duration: "58 min", prCount: 2, volume: "8.4", volumeUnit: "t", vsLastTime: "+320 kg volume, one more set")
+        public var summary: SessionSummary? = SessionSummary(
+            duration: "58 min", prCount: 2, volume: "8.4", volumeUnit: "t", vsLastTime: "+320 kg volume, one more set")
         // swiftlint:enable line_length
-        
+
         public var unit: String = "kg"
-        
+
         public var current: SessionExercise? {
             exercises.indices.contains(currentIndex) ? exercises[currentIndex] : nil
         }
-        
+
         public var setsDone: Int { exercises.flatMap(\.sets).filter(\.done).count }
         public var setsTotal: Int { exercises.flatMap(\.sets).count }
-        
+
         public init() {}
     }
-    
+
     public enum Action: BindableAction {
         case addExerciseButtonTapped
         case addSetButtonTapped
@@ -69,22 +97,22 @@ public struct Session {
         case stickerButtonTapped
         case unlockCompleted
         case weightChanged(setID: Int, delta: Double)
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     @Dependency(\.dismiss) var dismiss
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
             switch action {
             case .addExerciseButtonTapped, .binding, .delegate, .restAdjustButtonTapped,
-                    .saveAsRoutineButtonTapped, .skipRestButtonTapped:
+                .saveAsRoutineButtonTapped, .skipRestButtonTapped:
                 return .none
             case .addSetButtonTapped:
                 guard let last = state.current?.sets.last else { return .none }
@@ -95,7 +123,9 @@ public struct Session {
             case .addWarmupButtonTapped:
                 guard let first = state.current?.sets.first else { return .none }
                 state.exercises[state.currentIndex].sets.insert(
-                    SessionSet(id: (state.current?.sets.map(\.id).max() ?? 0) + 1, kind: .warmup, reps: first.reps, weight: first.weight / 2, done: false),
+                    SessionSet(
+                        id: (state.current?.sets.map(\.id).max() ?? 0) + 1, kind: .warmup, reps: first.reps,
+                        weight: first.weight / 2, done: false),
                     at: 0
                 )
                 return .none
@@ -146,7 +176,7 @@ extension Session.State {
         guard
             exercises.indices.contains(currentIndex),
             let index = exercises[currentIndex].sets.firstIndex(where: { $0.id == id })
-                else { return }
+        else { return }
         update(&exercises[currentIndex].sets[index])
     }
 }
@@ -161,8 +191,9 @@ public struct SessionExercise: Equatable, Identifiable, Sendable {
     /// "92.5 kg × 8".
     public var next: String?
     public var sets: [SessionSet]
-    
-    public init(id: String, art: String, last: String?, muscle: String, name: String, next: String?, sets: [SessionSet]) {
+
+    public init(id: String, art: String, last: String?, muscle: String, name: String, next: String?, sets: [SessionSet])
+    {
         self.id = id
         self.art = art
         self.last = last
@@ -175,13 +206,13 @@ public struct SessionExercise: Equatable, Identifiable, Sendable {
 
 public struct SessionSet: Equatable, Identifiable, Sendable {
     public enum Kind: Sendable { case normal, warmup, drop, failure, restPause }
-    
+
     public var id: Int
     public var kind: Kind
     public var reps: Int
     public var weight: Double
     public var done: Bool
-    
+
     public init(id: Int, kind: Kind, reps: Int, weight: Double, done: Bool) {
         self.id = id
         self.kind = kind
@@ -197,7 +228,7 @@ public struct SessionSummary: Equatable, Sendable {
     public var volume: String
     public var volumeUnit: String
     public var vsLastTime: String?
-    
+
     public init(duration: String, prCount: Int, volume: String, volumeUnit: String, vsLastTime: String?) {
         self.duration = duration
         self.prCount = prCount

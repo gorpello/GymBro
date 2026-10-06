@@ -5,12 +5,12 @@ import SwiftUI
 public struct SearchField: View {
     let prompt: String
     @Binding var text: String
-    
+
     public init(_ prompt: String, text: Binding<String>) {
         self.prompt = prompt
         self._text = text
     }
-    
+
     public var body: some View {
         HStack(spacing: 10) {
             GymIcon(.magnifyingGlass, size: 16)
@@ -44,13 +44,13 @@ public struct SegToggle<Value: Hashable>: View {
     let options: [(value: Value, label: String)]
     @Binding var selection: Value
     let fontSize: CGFloat
-    
+
     public init(_ options: [(value: Value, label: String)], selection: Binding<Value>, fontSize: CGFloat = 12) {
         self.options = options
         self._selection = selection
         self.fontSize = fontSize
     }
-    
+
     public var body: some View {
         HStack(spacing: 0) {
             ForEach(options, id: \.value) { option in
@@ -84,7 +84,7 @@ public struct StepperControl: View {
     let fontSize: CGFloat
     let buttonSize: CGFloat
     let minWidth: CGFloat
-    
+
     public init(
         _ value: String,
         fontSize: CGFloat = 16,
@@ -100,7 +100,7 @@ public struct StepperControl: View {
         self.onDecrement = onDecrement
         self.onIncrement = onIncrement
     }
-    
+
     public var body: some View {
         HStack(spacing: 10) {
             step("–", label: "Decrease", action: onDecrement)
@@ -113,7 +113,7 @@ public struct StepperControl: View {
             step("+", label: "Increase", action: onIncrement)
         }
     }
-    
+
     private func step(_ glyph: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Text(glyph)
@@ -133,14 +133,14 @@ public struct OptionRow<Trailing: View>: View {
     let title: String
     let detail: String?
     let trailing: Trailing
-    
+
     public init(_ title: String, icon: Ph? = nil, detail: String? = nil, @ViewBuilder trailing: () -> Trailing) {
         self.icon = icon
         self.title = title
         self.detail = detail
         self.trailing = trailing()
     }
-    
+
     public var body: some View {
         HStack(spacing: 14) {
             if let icon {
@@ -177,11 +177,11 @@ extension OptionRow where Trailing == DisclosureValue {
 /// Grey value + chevron.
 public struct DisclosureValue: View {
     let value: String
-    
+
     public init(_ value: String) {
         self.value = value
     }
-    
+
     public var body: some View {
         HStack(spacing: 6) {
             Text(value)
@@ -197,7 +197,7 @@ public struct DisclosureValue: View {
 /// Toggle tinted like `TinySwitch`.
 public struct GymToggleStyle: ToggleStyle {
     public init() {}
-    
+
     public func makeBody(configuration: Configuration) -> some View {
         Toggle(isOn: configuration.$isOn) { configuration.label }
             .toggleStyle(.switch)

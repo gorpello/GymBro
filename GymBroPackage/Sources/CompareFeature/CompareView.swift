@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct CompareView: View {
     @Bindable var store: StoreOf<Compare>
-    
+
     public init(store: StoreOf<Compare>) {
         self.store = store
     }
-    
+
     public var body: some View {
         VStack(spacing: 16) {
             SegToggle(["front", "side", "back"].map { ($0, L10n.poseName($0)) }, selection: $store.pose, fontSize: 13)
@@ -52,8 +52,12 @@ public struct CompareView: View {
         .gymScreen(L10n.compare)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { store.send(.shareButtonTapped) } label: { GymIcon(.shareNetwork, size: 18) }
-                    .accessibilityLabel(L10n.share)
+                Button {
+                    store.send(.shareButtonTapped)
+                } label: {
+                    GymIcon(.shareNetwork, size: 18)
+                }
+                .accessibilityLabel(L10n.share)
             }
         }
     }

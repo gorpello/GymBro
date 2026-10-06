@@ -28,10 +28,10 @@ public struct Profile {
         public var workoutsToNextLevel: Int = 6
         /// Sessions per month for the "Your year" bars, January first.
         public var yearMonths: [Int] = [0, 0, 0, 0, 2, 6, 9, 12, 14, 8, 0, 0]
-        
+
         public init() {}
     }
-    
+
     public enum Action {
         case delegate(Delegate)
         case editProfileButtonTapped
@@ -40,14 +40,14 @@ public struct Profile {
         case settingsButtonTapped
         case shareButtonTapped
         case takePhotoButtonTapped
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
@@ -71,7 +71,7 @@ public struct MedalRow: Equatable, Identifiable, Sendable {
     public var id: String
     public var name: String
     public var isNew: Bool
-    
+
     public init(id: String, name: String, isNew: Bool) {
         self.id = id
         self.name = name

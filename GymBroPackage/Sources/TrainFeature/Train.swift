@@ -13,11 +13,13 @@ public struct Train {
         public var searchText = ""
         public var selectedMuscles: Set<String> = []
         public var step: Step = .focus
-        
+
         /// Exercises suggested for the chosen focus.
         public var suggestions: [TrainExercise] = [
             .init(id: "EIeI8Vf", art: "bench-press", detail: "Chest · Barbell", name: "Barbell Bench Press"),
-            .init(id: "ns0SIbU", art: "incline-dumbbell-press", detail: "Chest · Dumbbell", name: "Dumbbell Incline Bench Press"),
+            .init(
+                id: "ns0SIbU", art: "incline-dumbbell-press", detail: "Chest · Dumbbell",
+                name: "Dumbbell Incline Bench Press"),
             .init(id: "tri1", art: "rope-tricep-pushdown", detail: "Triceps · Cable", name: "Rope Triceps Pushdown"),
             .init(id: "tri2", art: "skull-crusher", detail: "Triceps · Barbell", name: "Skull Crusher"),
         ]
@@ -28,14 +30,14 @@ public struct Train {
         ]
         /// Equipment ids available for the chosen focus.
         public var equipmentOptions: [String] = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight"]
-        
+
         public init() {}
     }
-    
+
     public enum Step: Hashable, Sendable {
         case focus, build
     }
-    
+
     public enum Action: BindableAction {
         case backButtonTapped
         case binding(BindingAction<State>)
@@ -47,16 +49,16 @@ public struct Train {
         case muscleTapped(String)
         case startButtonTapped
         case warmupButtonTapped
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     @Dependency(\.dismiss) var dismiss
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
@@ -94,7 +96,7 @@ public struct TrainExercise: Equatable, Identifiable, Sendable {
     public var art: String
     public var detail: String
     public var name: String
-    
+
     public init(id: String, art: String, detail: String, name: String) {
         self.id = id
         self.art = art

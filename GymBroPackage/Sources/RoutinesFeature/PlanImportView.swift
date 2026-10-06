@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct PlanImportView: View {
     @Bindable var store: StoreOf<PlanImport>
-    
+
     public init(store: StoreOf<PlanImport>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -31,7 +31,8 @@ public struct PlanImportView: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(routine.name).font(.gym(15.5, .bold)).foregroundStyle(GymColor.text)
-                                    Text(L10n.exerciseCount(routine.exerciseCount)).font(.gym(12.5, .medium)).foregroundStyle(GymColor.textSecondary)
+                                    Text(L10n.exerciseCount(routine.exerciseCount)).font(.gym(12.5, .medium))
+                                        .foregroundStyle(GymColor.textSecondary)
                                 }
                                 Spacer()
                                 if let day = routine.weekday {

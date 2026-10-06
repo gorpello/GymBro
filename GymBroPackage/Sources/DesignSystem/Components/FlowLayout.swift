@@ -4,19 +4,19 @@ import SwiftUI
 public struct FlowLayout: Layout {
     let spacing: CGFloat
     let lineSpacing: CGFloat
-    
+
     public init(spacing: CGFloat = 8, lineSpacing: CGFloat = 8) {
         self.spacing = spacing
         self.lineSpacing = lineSpacing
     }
-    
+
     public func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
         let rows = rows(proposal.width ?? .infinity, subviews)
         let width = rows.map(\.width).max() ?? 0
         let height = rows.map(\.height).reduce(0, +) + lineSpacing * CGFloat(max(rows.count - 1, 0))
         return CGSize(width: proposal.width ?? width, height: height)
     }
-    
+
     public func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
         var y = bounds.minY
         for row in rows(bounds.width, subviews) {
@@ -29,13 +29,13 @@ public struct FlowLayout: Layout {
             y += row.height + lineSpacing
         }
     }
-    
+
     private struct Row {
         var indices: [Int] = []
         var width: CGFloat = 0
         var height: CGFloat = 0
     }
-    
+
     private func rows(_ maxWidth: CGFloat, _ subviews: Subviews) -> [Row] {
         var rows: [Row] = [Row()]
         for (index, subview) in subviews.enumerated() {

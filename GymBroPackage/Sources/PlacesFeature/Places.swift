@@ -6,21 +6,23 @@ public struct Places {
     @ObservableState
     public struct State: Equatable {
         public var activePlaceID: String? = "basement"
-        
+
         // TODO: Remove templates elements
         // swiftlint:disable line_length
         public var places: [PlaceRow] = [
-            .init(id: "basement", equipment: ["Barbell", "Dumbbell", "Bodyweight", "Kettlebell", "Rings"], exerciseCount: 363, name: "Basement gym", plateSizes: 3),
-            .init(id: "hotel", equipment: ["Dumbbell", "Bodyweight"], exerciseCount: 236, name: "Hotel", plateSizes: 0),
+            .init(
+                id: "basement", equipment: ["Barbell", "Dumbbell", "Bodyweight", "Kettlebell", "Rings"],
+                exerciseCount: 363, name: "Basement gym", plateSizes: 3),
+            .init(
+                id: "hotel", equipment: ["Dumbbell", "Bodyweight"], exerciseCount: 236, name: "Hotel", plateSizes: 0),
         ]
         // swiftlint:disable line_length
 
-        
         public var activeName: String? { places.first { $0.id == activePlaceID }?.name }
-        
+
         public init() {}
     }
-    
+
     public enum Action {
         case deleteButtonTapped(id: String)
         case editButtonTapped(id: String)
@@ -29,9 +31,9 @@ public struct Places {
         case placeSelected(id: String)
         case platesButtonTapped(id: String)
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
@@ -58,7 +60,7 @@ public struct PlaceRow: Equatable, Identifiable, Sendable {
     public var name: String
     /// Plate sizes owned; 0 means everything is available.
     public var plateSizes: Int
-    
+
     public init(id: String, equipment: Set<String>, exerciseCount: Int, name: String, plateSizes: Int) {
         self.id = id
         self.equipment = equipment

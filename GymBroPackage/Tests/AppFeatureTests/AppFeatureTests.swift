@@ -8,7 +8,7 @@ import TrainFeature
 struct AppFeatureTests {
     @Test func selectingATabSwitchesToIt() async {
         let store = TestStore(initialState: AppFeature.State()) { AppFeature() }
-        
+
         await store.send(.tabSelected(.progress)) {
             $0.selectedTab = .progress
         }
@@ -16,10 +16,10 @@ struct AppFeatureTests {
             $0.selectedTab = .profile
         }
     }
-    
+
     @Test func startWorkoutOpensTheStartSheetWithoutChangingTab() async {
         let store = TestStore(initialState: AppFeature.State()) { AppFeature() }
-        
+
         await store.send(.tabSelected(.exercises)) {
             $0.selectedTab = .exercises
         }

@@ -7,13 +7,13 @@ public struct HeatGrid: View {
     let weeks: [[Int]]
     let tone: HeatTone
     let spacing: CGFloat
-    
+
     public init(weeks: [[Int]], tone: HeatTone = .ember, spacing: CGFloat = 4) {
         self.weeks = weeks
         self.tone = tone
         self.spacing = spacing
     }
-    
+
     public var body: some View {
         Grid(horizontalSpacing: spacing, verticalSpacing: spacing) {
             ForEach(0..<7, id: \.self) { row in
@@ -36,13 +36,13 @@ public struct WeekStrip: View {
     let initials: [String]
     let done: [Bool]
     let today: Int
-    
+
     public init(initials: [String], done: [Bool], today: Int) {
         self.initials = initials
         self.done = done
         self.today = today
     }
-    
+
     public var body: some View {
         HStack {
             ForEach(initials.indices, id: \.self) { i in
@@ -71,13 +71,13 @@ public struct GoalRing: View {
     let done: Int
     let goal: Int
     let size: CGFloat
-    
+
     public init(done: Int, goal: Int, size: CGFloat = 52) {
         self.done = done
         self.goal = goal
         self.size = size
     }
-    
+
     public var body: some View {
         VStack(spacing: 6) {
             ZStack {
@@ -100,12 +100,12 @@ public struct GoalRing: View {
 public struct Sparkline: View {
     let values: [Double]
     let showsRange: Bool
-    
+
     public init(_ values: [Double], showsRange: Bool = true) {
         self.values = values
         self.showsRange = showsRange
     }
-    
+
     public var body: some View {
         HStack(spacing: 8) {
             GeometryReader { proxy in
@@ -138,7 +138,7 @@ public struct Sparkline: View {
         }
         .accessibilityHidden(true)
     }
-    
+
     private func points(in size: CGSize) -> [CGPoint] {
         guard values.count > 1, let lo = values.min(), let hi = values.max() else { return [] }
         let span = max(hi - lo, 0.0001)
@@ -156,13 +156,13 @@ public struct HeatLegend: View {
     let low: String
     let high: String
     let tone: HeatTone
-    
+
     public init(low: String, high: String, tone: HeatTone = .ember) {
         self.low = low
         self.high = high
         self.tone = tone
     }
-    
+
     public var body: some View {
         HStack(spacing: 6) {
             Text(low)
@@ -179,11 +179,11 @@ public struct HeatLegend: View {
 /// Vertical dashed line (`DashedRail`), used by the timelines.
 public struct DashedRail: View {
     let color: Color
-    
+
     public init(color: Color = GymColor.accent) {
         self.color = color
     }
-    
+
     public var body: some View {
         GeometryReader { proxy in
             Path { path in

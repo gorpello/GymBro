@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct ExerciseLibraryView: View {
     @Bindable var store: StoreOf<ExerciseLibrary>
-    
+
     public init(store: StoreOf<ExerciseLibrary>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 14, pinnedViews: []) {
@@ -46,7 +46,7 @@ public struct ExerciseLibraryView: View {
             }
         }
     }
-    
+
     private var header: some View {
         HStack(alignment: .top) {
             VStack(alignment: .leading, spacing: 4) {
@@ -62,7 +62,7 @@ public struct ExerciseLibraryView: View {
         }
         .padding(.top, 8)
     }
-    
+
     private var filters: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
@@ -84,7 +84,7 @@ struct ExerciseRow: View {
     let row: ExerciseRowState
     let onTap: () -> Void
     let onFavourite: () -> Void
-    
+
     var body: some View {
         HStack(spacing: 16) {
             Button(action: onTap) {

@@ -8,11 +8,11 @@ public struct StickerView: View {
     @GestureState private var drag: CGSize = .zero
     @GestureState private var pinch: CGFloat = 1
     @GestureState private var twist: Angle = .zero
-    
+
     public init(store: StoreOf<Sticker>) {
         self.store = store
     }
-    
+
     public var body: some View {
         VStack(spacing: 16) {
             canvas
@@ -41,7 +41,7 @@ public struct StickerView: View {
         .padding(20)
         .gymScreen(L10n.stickerOpen)
     }
-    
+
     private var canvas: some View {
         RoundedRectangle(cornerRadius: 26)
             .fill(GymColor.bgRaised2)
@@ -60,17 +60,20 @@ public struct StickerView: View {
                         DragGesture()
                             .updating($drag) { value, state, _ in state = value.translation }
                             .onEnded { store.send(.stickerDragged(translation: $0.translation)) }
-                            .simultaneously(with: MagnifyGesture()
-                                .updating($pinch) { value, state, _ in state = value.magnification }
-                                .onEnded { store.send(.stickerPinched(magnification: $0.magnification)) })
-                            .simultaneously(with: RotateGesture()
-                                .updating($twist) { value, state, _ in state = value.rotation }
-                                .onEnded { store.send(.stickerRotated(degrees: $0.rotation.degrees)) })
+                            .simultaneously(
+                                with: MagnifyGesture()
+                                    .updating($pinch) { value, state, _ in state = value.magnification }
+                                    .onEnded { store.send(.stickerPinched(magnification: $0.magnification)) }
+                            )
+                            .simultaneously(
+                                with: RotateGesture()
+                                    .updating($twist) { value, state, _ in state = value.rotation }
+                                    .onEnded { store.send(.stickerRotated(degrees: $0.rotation.degrees)) })
                     )
             }
             .clipShape(.rect(cornerRadius: 26))
     }
-    
+
     @ViewBuilder
     private var sticker: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -109,7 +112,7 @@ public struct StickerView: View {
         .padding(18)
         .background(.black.opacity(0.55), in: .rect(cornerRadius: 20))
     }
-    
+
     private func stat(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label).font(.gym(10, .bold)).tracking(1).foregroundStyle(.white.opacity(0.7))

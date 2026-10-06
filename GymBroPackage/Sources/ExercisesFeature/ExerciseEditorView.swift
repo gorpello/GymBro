@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct ExerciseEditorView: View {
     @Bindable var store: StoreOf<ExerciseEditor>
-    
+
     public init(store: StoreOf<ExerciseEditor>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
@@ -80,7 +80,7 @@ public struct ExerciseEditorView: View {
             }
         }
     }
-    
+
     private func section(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Kicker(title, size: 11, spacing: 2)

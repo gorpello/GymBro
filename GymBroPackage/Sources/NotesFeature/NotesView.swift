@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct NotesView: View {
     @Bindable var store: StoreOf<Notes>
-    
+
     public init(store: StoreOf<Notes>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -49,16 +49,24 @@ public struct NotesView: View {
         .gymScreen(L10n.journal, subtitle: L10n.noteCount(store.noteCount))
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { store.send(.calendarButtonTapped) } label: { GymIcon(.calendarBlank, size: 18) }
-                    .accessibilityLabel(L10n.noteCalendar)
-                Button { store.send(.addButtonTapped) } label: { GymIcon(.plus, weight: .bold, size: 18) }
-                    .buttonStyle(.glassProminent)
-                    .tint(GymColor.ember)
-                    .accessibilityLabel(L10n.addNote.titleCased)
+                Button {
+                    store.send(.calendarButtonTapped)
+                } label: {
+                    GymIcon(.calendarBlank, size: 18)
+                }
+                .accessibilityLabel(L10n.noteCalendar)
+                Button {
+                    store.send(.addButtonTapped)
+                } label: {
+                    GymIcon(.plus, weight: .bold, size: 18)
+                }
+                .buttonStyle(.glassProminent)
+                .tint(GymColor.ember)
+                .accessibilityLabel(L10n.addNote.titleCased)
             }
         }
     }
-    
+
     private var filters: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 8) {
@@ -71,7 +79,7 @@ public struct NotesView: View {
         }
         .scrollIndicators(.hidden)
     }
-    
+
     private func filter(_ label: String, kind: String?) -> some View {
         let selected = store.kindFilter == kind
         return Button {
@@ -83,7 +91,8 @@ public struct NotesView: View {
                 .padding(.horizontal, 18)
                 .frame(height: 44)
                 .background(GymColor.bgRaised, in: .capsule)
-                .overlay(Capsule().strokeBorder(selected ? GymColor.text : GymColor.border, lineWidth: selected ? 1.5 : 1))
+                .overlay(
+                    Capsule().strokeBorder(selected ? GymColor.text : GymColor.border, lineWidth: selected ? 1.5 : 1))
         }
         .buttonStyle(.pressable(scale: 0.95))
         .accessibilityAddTraits(selected ? .isSelected : [])
@@ -93,7 +102,7 @@ public struct NotesView: View {
 /// Journal card with a kind-coloured edge fading out to the right.
 struct NoteCard: View {
     let note: NoteRow
-    
+
     var body: some View {
         let color = NoteKindStyle.color(note.kind)
         VStack(alignment: .leading, spacing: 8) {
@@ -115,7 +124,8 @@ struct NoteCard: View {
         .overlay {
             RoundedRectangle(cornerRadius: 22)
                 .strokeBorder(
-                    LinearGradient(colors: [color, color.opacity(0)], startPoint: .leading, endPoint: UnitPoint(x: 0.3, y: 0.5)),
+                    LinearGradient(
+                        colors: [color, color.opacity(0)], startPoint: .leading, endPoint: UnitPoint(x: 0.3, y: 0.5)),
                     lineWidth: 2.5
                 )
         }

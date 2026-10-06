@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct PlacesView: View {
     let store: StoreOf<Places>
-    
+
     public init(store: StoreOf<Places>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -25,11 +25,15 @@ public struct PlacesView: View {
                 Button {
                     store.send(.newPlaceButtonTapped)
                 } label: {
-                    Label { Text(L10n.placeNew) } icon: { GymIcon(.plus, weight: .bold, size: 16) }
-                        .font(.gym(16, .bold))
-                        .foregroundStyle(GymColor.text)
-                        .frame(maxWidth: .infinity, minHeight: 60)
-                        .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(GymColor.border, lineWidth: 1.2))
+                    Label {
+                        Text(L10n.placeNew)
+                    } icon: {
+                        GymIcon(.plus, weight: .bold, size: 16)
+                    }
+                    .font(.gym(16, .bold))
+                    .foregroundStyle(GymColor.text)
+                    .frame(maxWidth: .infinity, minHeight: 60)
+                    .overlay(RoundedRectangle(cornerRadius: 20).strokeBorder(GymColor.border, lineWidth: 1.2))
                 }
                 .buttonStyle(.pressable)
             }
@@ -38,7 +42,7 @@ public struct PlacesView: View {
         }
         .gymScreen(L10n.places, subtitle: store.activeName.map(L10n.placeActive) ?? L10n.placeAll)
     }
-    
+
     private func card(_ place: PlaceRow, active: Bool) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 14) {
@@ -59,15 +63,24 @@ public struct PlacesView: View {
                 .accessibilityAddTraits(active ? .isSelected : [])
                 VStack(alignment: .leading, spacing: 2) {
                     Text(place.name).font(.gym(21, .extraBold)).foregroundStyle(GymColor.text)
-                    Text(L10n.placeExercises(place.exerciseCount)).font(.gym(13.5, .medium)).foregroundStyle(GymColor.textTertiary)
+                    Text(L10n.placeExercises(place.exerciseCount)).font(.gym(13.5, .medium)).foregroundStyle(
+                        GymColor.textTertiary)
                 }
                 Spacer()
-                Button { store.send(.editButtonTapped(id: place.id)) } label: { GymIcon(.pencilSimple, size: 18) }
-                    .foregroundStyle(GymColor.textSecondary)
-                    .accessibilityLabel(L10n.editEntry)
-                Button { store.send(.deleteButtonTapped(id: place.id)) } label: { GymIcon(.trash, size: 18) }
-                    .foregroundStyle(GymColor.textSecondary)
-                    .accessibilityLabel(L10n.delete)
+                Button {
+                    store.send(.editButtonTapped(id: place.id))
+                } label: {
+                    GymIcon(.pencilSimple, size: 18)
+                }
+                .foregroundStyle(GymColor.textSecondary)
+                .accessibilityLabel(L10n.editEntry)
+                Button {
+                    store.send(.deleteButtonTapped(id: place.id))
+                } label: {
+                    GymIcon(.trash, size: 18)
+                }
+                .foregroundStyle(GymColor.textSecondary)
+                .accessibilityLabel(L10n.delete)
             }
             Kicker(L10n.placeGearLabel, size: 11, spacing: 2)
             FlowLayout(spacing: 8, lineSpacing: 10) {
@@ -95,7 +108,9 @@ public struct PlacesView: View {
         }
         .padding(22)
         .background(GymColor.bgRaised, in: .rect(cornerRadius: 26))
-        .overlay(RoundedRectangle(cornerRadius: 26).strokeBorder(active ? GymColor.text : GymColor.border, lineWidth: active ? 1.5 : 1))
+        .overlay(
+            RoundedRectangle(cornerRadius: 26).strokeBorder(
+                active ? GymColor.text : GymColor.border, lineWidth: active ? 1.5 : 1))
     }
 }
 

@@ -13,7 +13,7 @@ extension View {
             .background(fill, in: .rect(cornerRadius: radius))
             .overlay(RoundedRectangle(cornerRadius: radius).strokeBorder(border, lineWidth: 1))
     }
-    
+
     /// Page background with the chosen pattern, used by every screen.
     public func gymBackground(_ pattern: BackgroundPattern = .dots) -> some View {
         background {
@@ -24,7 +24,7 @@ extension View {
             .ignoresSafeArea()
         }
     }
-    
+
     /// Pushed screen chrome: Nunito title + subtitle next to the native back button
     /// (GymMane's `ScreenHeader`), on the patterned background.
     public func gymScreen(_ title: String, subtitle: String? = nil) -> some View {
@@ -45,7 +45,7 @@ public enum BackgroundPattern: String, CaseIterable, Sendable {
 struct BackgroundPatternView: View {
     let pattern: BackgroundPattern
     static let gap: CGFloat = 26
-    
+
     var body: some View {
         Canvas { context, size in
             let color = GymColor.border.opacity(0.5)
@@ -55,7 +55,9 @@ struct BackgroundPatternView: View {
                 while y < size.height {
                     var x = Self.gap
                     while x < size.width {
-                        context.fill(Path(ellipseIn: CGRect(x: x - 1.1, y: y - 1.1, width: 2.2, height: 2.2)), with: .color(color))
+                        context.fill(
+                            Path(ellipseIn: CGRect(x: x - 1.1, y: y - 1.1, width: 2.2, height: 2.2)),
+                            with: .color(color))
                         x += Self.gap
                     }
                     y += Self.gap
@@ -83,11 +85,11 @@ struct BackgroundPatternView: View {
 /// Grouped rows on one raised card with inset dividers (`ToolGroup` / `OptionGroup`).
 public struct GroupCard<Content: View>: View {
     let content: Content
-    
+
     public init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
-    
+
     public var body: some View {
         VStack(spacing: 0) {
             Group(subviews: content) { subviews in
@@ -107,12 +109,12 @@ public struct GroupCard<Content: View>: View {
 public struct SheetTitle: View {
     let title: String
     let subtitle: String?
-    
+
     public init(_ title: String, subtitle: String? = nil) {
         self.title = title
         self.subtitle = subtitle
     }
-    
+
     public var body: some View {
         VStack(spacing: 6) {
             Text(title.titleCased)
@@ -134,13 +136,13 @@ public struct EmptyStateView: View {
     let icon: Ph
     let title: String
     let message: String
-    
+
     public init(icon: Ph, title: String, message: String) {
         self.icon = icon
         self.title = title
         self.message = message
     }
-    
+
     public var body: some View {
         VStack(spacing: 12) {
             GymIcon(icon, size: 28)

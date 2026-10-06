@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct AboutView: View {
     let store: StoreOf<About>
-    
+
     public init(store: StoreOf<About>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
@@ -35,9 +35,11 @@ public struct AboutView: View {
                 }
                 Kicker(L10n.madeWithLoveBy, size: 11, spacing: 2)
                 Text("gorpello").font(.gym(15, .bold)).foregroundStyle(GymColor.text)
-                Text("Exercise art: Workout Guide by Bryl Lim and Everkinetic, CC BY-SA 4.0. Font: Nunito, SIL Open Font License.")
-                    .font(.gym(12, .medium))
-                    .foregroundStyle(GymColor.textSecondary)
+                Text(
+                    "Exercise art: Workout Guide by Bryl Lim and Everkinetic, CC BY-SA 4.0. Font: Nunito, SIL Open Font License."
+                )
+                .font(.gym(12, .medium))
+                .foregroundStyle(GymColor.textSecondary)
                 HStack(spacing: 10) {
                     Button(L10n.sourceCode.titleCased) { store.send(.sourceCodeButtonTapped) }.buttonStyle(.ghost)
                     Button(L10n.buyCoffee) { store.send(.buyCoffeeButtonTapped) }.buttonStyle(.ghost)
@@ -47,7 +49,7 @@ public struct AboutView: View {
         }
         .gymScreen(L10n.about)
     }
-    
+
     private func perk(_ icon: Ph, _ title: String, _ detail: String) -> some View {
         OptionRow(title, icon: icon, detail: detail) { EmptyView() }
     }

@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct ToolsView: View {
     let store: StoreOf<Tools>
-    
+
     public init(store: StoreOf<Tools>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             LazyVGrid(columns: [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)], spacing: 12) {
@@ -21,7 +21,8 @@ public struct ToolsView: View {
                             GymIcon(toolIcon(id), weight: .fill, size: 20)
                                 .foregroundStyle(Color.black.opacity(0.65))
                                 .frame(width: 42, height: 42)
-                                .background(GymColor.folderHues[index % GymColor.folderHues.count], in: .rect(cornerRadius: 12))
+                                .background(
+                                    GymColor.folderHues[index % GymColor.folderHues.count], in: .rect(cornerRadius: 12))
                             Text(L10n.toolName(id)).font(.gym(16, .extraBold)).foregroundStyle(GymColor.text)
                             Text(L10n.toolDesc(id))
                                 .font(.gym(12.5, .medium))
@@ -54,11 +55,11 @@ func toolIcon(_ id: String) -> Ph {
 
 public struct ToolDetailView: View {
     let store: StoreOf<ToolDetail>
-    
+
     public init(store: StoreOf<ToolDetail>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {

@@ -27,45 +27,46 @@ public enum GymColor {
     public static let info = dynamic(dark: 0xFF7FA8C9, light: 0xFF3268A0)
     public static let warn = dynamic(dark: 0xFFE0B15A, light: 0xFF9A6A12)
     public static let danger = dynamic(dark: 0xFFE5674C, light: 0xFFC0392B)
-    
+
     /// Resting muscle colour on the body map: `bgRaised2` nudged towards `textSecondary`.
     public static let idleMuscle = blend(bgRaised2, textSecondary, 0.32)
     /// Lighter body silhouette parts (hands, feet).
     public static let bodyLite = blend(bgRaised2, textTertiary, 0.14)
-    
+
     /// Routine folder hues (`kFolderHues` in `routine_folder.dart`).
     public static let folderHues: [Color] = [
         Color(argb: 0xFFF3C7B1), Color(argb: 0xFFA78BDA), Color(argb: 0xFFA8C99E),
         Color(argb: 0xFF9CC2E8), Color(argb: 0xFFE8CF98), Color(argb: 0xFFE6A4B9),
     ]
-    
+
     /// Mixes `a` towards `b`, resolving both for the current appearance.
     public static func mix(_ a: Color, _ b: Color, _ t: CGFloat) -> Color {
         blend(a, b, t)
     }
-    
+
     static func dynamic(dark: UInt32, light: UInt32) -> Color {
         Color(uiColor: UIColor { $0.userInterfaceStyle == .light ? UIColor(argb: light) : UIColor(argb: dark) })
     }
-    
+
     static func blend(_ a: Color, _ b: Color, _ t: CGFloat) -> Color {
-        Color(uiColor: UIColor { traits in
-            let ca = UIColor(a).resolvedColor(with: traits).rgba
-            let cb = UIColor(b).resolvedColor(with: traits).rgba
-            return UIColor(
-                red: ca.r + (cb.r - ca.r) * t,
-                green: ca.g + (cb.g - ca.g) * t,
-                blue: ca.b + (cb.b - ca.b) * t,
-                alpha: ca.a + (cb.a - ca.a) * t
-            )
-        })
+        Color(
+            uiColor: UIColor { traits in
+                let ca = UIColor(a).resolvedColor(with: traits).rgba
+                let cb = UIColor(b).resolvedColor(with: traits).rgba
+                return UIColor(
+                    red: ca.r + (cb.r - ca.r) * t,
+                    green: ca.g + (cb.g - ca.g) * t,
+                    blue: ca.b + (cb.b - ca.b) * t,
+                    alpha: ca.a + (cb.a - ca.a) * t
+                )
+            })
     }
 }
 
 /// Heat ramps used by the activity grid and the muscle map (`body_map.dart`).
 public enum HeatTone: String, CaseIterable, Sendable {
     case ember, green, blue, mono
-    
+
     /// Four steps from cold to hot, already resolved for light and dark.
     public var ramp: [Color] {
         let dark: [UInt32]
@@ -86,7 +87,7 @@ public enum HeatTone: String, CaseIterable, Sendable {
         }
         return zip(dark, light).map { GymColor.dynamic(dark: $0, light: $1) }
     }
-    
+
     /// Colour for a heat level from 0 (untouched) to 4 (full volume).
     public func color(level: Int) -> Color {
         level <= 0 ? GymColor.idleMuscle : ramp[min(level, 4) - 1]
@@ -108,7 +109,7 @@ extension UIColor {
             alpha: CGFloat((argb >> 24) & 0xFF) / 255
         )
     }
-    
+
     fileprivate var rgba: (r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat) {
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
         getRed(&r, green: &g, blue: &b, alpha: &a)

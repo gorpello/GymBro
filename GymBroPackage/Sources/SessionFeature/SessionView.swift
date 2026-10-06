@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct SessionView: View {
     @Bindable var store: StoreOf<Session>
-    
+
     public init(store: StoreOf<Session>) {
         self.store = store
     }
-    
+
     public var body: some View {
         Group {
             if store.isFinished {
@@ -30,7 +30,7 @@ public struct SessionView: View {
             overview
         }
     }
-    
+
     private var live: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -73,7 +73,7 @@ public struct SessionView: View {
             .padding(.bottom, 24)
         }
     }
-    
+
     private var topBar: some View {
         HStack(spacing: 10) {
             Circle()
@@ -88,13 +88,16 @@ public struct SessionView: View {
                 .monospacedDigit()
                 .foregroundStyle(GymColor.text)
             RoundButton(.fingerprint, label: L10n.lockWorkout, size: 44) { store.send(.lockButtonTapped) }
-            RoundButton(store.isPaused ? .play : .pause, label: store.isPaused ? L10n.resumeWorkout : L10n.pauseWorkout, size: 44) {
+            RoundButton(
+                store.isPaused ? .play : .pause, label: store.isPaused ? L10n.resumeWorkout : L10n.pauseWorkout,
+                size: 44
+            ) {
                 store.send(.pauseButtonTapped)
             }
         }
         .padding(.top, 8)
     }
-    
+
     private var progress: some View {
         VStack(spacing: 10) {
             HStack {
@@ -123,7 +126,7 @@ public struct SessionView: View {
             }
         }
     }
-    
+
     private var restPanel: some View {
         VStack(spacing: 0) {
             HStack(alignment: .bottom) {
@@ -136,7 +139,8 @@ public struct SessionView: View {
                     .textCase(.uppercase)
                     .foregroundStyle(GymColor.text)
                     .frame(maxWidth: .infinity, minHeight: 46)
-                    .background(GymColor.bgRaised2, in: UnevenRoundedRectangle(topLeadingRadius: 18, topTrailingRadius: 18))
+                    .background(
+                        GymColor.bgRaised2, in: UnevenRoundedRectangle(topLeadingRadius: 18, topTrailingRadius: 18))
                 Spacer()
                 Button("+15") { store.send(.restAdjustButtonTapped(seconds: 15)) }
                     .buttonStyle(.ghost)
@@ -150,7 +154,8 @@ public struct SessionView: View {
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: 2) {
                             Text(store.elapsed).font(.gym(22, .extraBold)).foregroundStyle(GymColor.text)
-                            Text(L10n.elapsedCaps).font(.gym(11, .bold)).tracking(1.2).foregroundStyle(GymColor.textSecondary)
+                            Text(L10n.elapsedCaps).font(.gym(11, .bold)).tracking(1.2).foregroundStyle(
+                                GymColor.textSecondary)
                         }
                         Spacer()
                         VStack(spacing: 0) {
@@ -165,8 +170,10 @@ public struct SessionView: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text("\(store.setsDone)/\(store.setsTotal)").font(.gym(22, .extraBold)).foregroundStyle(GymColor.text)
-                            Text(L10n.setsCaps).font(.gym(11, .bold)).tracking(1.2).foregroundStyle(GymColor.textSecondary)
+                            Text("\(store.setsDone)/\(store.setsTotal)").font(.gym(22, .extraBold)).foregroundStyle(
+                                GymColor.text)
+                            Text(L10n.setsCaps).font(.gym(11, .bold)).tracking(1.2).foregroundStyle(
+                                GymColor.textSecondary)
                         }
                     }
                 }
@@ -178,7 +185,7 @@ public struct SessionView: View {
             .accessibilityLabel(L10n.tapToSkip)
         }
     }
-    
+
     private func setTable(_ exercise: SessionExercise) -> some View {
         VStack(spacing: 8) {
             HStack {
@@ -207,7 +214,7 @@ public struct SessionView: View {
         .padding(10)
         .background(GymColor.bgRaised, in: .rect(cornerRadius: 26))
     }
-    
+
     private var actions: some View {
         VStack(spacing: 12) {
             HStack(spacing: 10) {
@@ -226,7 +233,7 @@ public struct SessionView: View {
         }
         .padding(.top, 4)
     }
-    
+
     private var overview: some View {
         NavigationStack {
             List {
@@ -240,9 +247,12 @@ public struct SessionView: View {
                                 .background(GymColor.bgRaised2, in: .rect(cornerRadius: 12))
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(exercise.name).font(.gym(15, .bold)).foregroundStyle(GymColor.text)
-                                Text(L10n.setsDoneOf(done: exercise.sets.filter(\.done).count, total: exercise.sets.count))
-                                    .font(.gym(12.5, .medium))
-                                    .foregroundStyle(GymColor.textSecondary)
+                                Text(
+                                    L10n.setsDoneOf(
+                                        done: exercise.sets.filter(\.done).count, total: exercise.sets.count)
+                                )
+                                .font(.gym(12.5, .medium))
+                                .foregroundStyle(GymColor.textSecondary)
                             }
                             Spacer()
                             if index == store.currentIndex {
@@ -268,11 +278,11 @@ public struct SessionView: View {
 /// One set: number, reps stepper, weight stepper and the done check (sage when done).
 struct SetRowView: View {
     enum Change { case reps(Int), weight(Double), done }
-    
+
     let index: Int
     let set: SessionSet
     let onChange: (Change) -> Void
-    
+
     var body: some View {
         HStack {
             Text(set.kind == .warmup ? "W" : "\(index)")
@@ -286,7 +296,8 @@ struct SetRowView: View {
                 onChange(.reps(1))
             }
             Spacer()
-            StepperControl(set.weight.formatted(.number.precision(.fractionLength(0...1))), fontSize: 17, minWidth: 44) {
+            StepperControl(set.weight.formatted(.number.precision(.fractionLength(0...1))), fontSize: 17, minWidth: 44)
+            {
                 onChange(.weight(-2.5))
             } onIncrement: {
                 onChange(.weight(2.5))
@@ -318,7 +329,7 @@ struct SetRowView: View {
 /// Bar of vertical ticks that empties as rest runs down.
 struct RestTicks: View {
     let progress: Double
-    
+
     var body: some View {
         GeometryReader { proxy in
             let count = max(1, Int(proxy.size.width / 9))
@@ -338,7 +349,7 @@ struct RestTicks: View {
 /// Covers the session so pocket taps do nothing. Press and hold the fingerprint to unlock.
 struct LockOverlay: View {
     let onUnlock: () -> Void
-    
+
     var body: some View {
         ZStack {
             Rectangle().fill(.ultraThinMaterial).ignoresSafeArea()
@@ -366,7 +377,7 @@ struct LockOverlay: View {
 /// "Workout logged" summary with duration, volume, records and what to do next.
 struct SessionSummaryView: View {
     let store: StoreOf<Session>
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {

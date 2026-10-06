@@ -8,7 +8,7 @@ extension String {
         if rangeOfCharacter(from: .decimalDigits) != nil { return self }
         return prefix(1) + dropFirst().lowercased()
     }
-    
+
     /// `sentenceCase` from `ui_kit.dart`.
     public var sentenceCased: String {
         guard !isEmpty, self == uppercased(), self != lowercased() else { return self }
@@ -22,14 +22,14 @@ public struct Kicker: View {
     let color: Color
     let size: CGFloat
     let spacing: CGFloat
-    
+
     public init(_ text: String, color: Color = GymColor.textSecondary, size: CGFloat = 12, spacing: CGFloat = 3) {
         self.text = text
         self.color = color
         self.size = size
         self.spacing = spacing
     }
-    
+
     public var body: some View {
         Text(text.uppercased())
             .font(.gym(size, .semibold, relativeTo: .caption))
@@ -42,12 +42,12 @@ public struct Kicker: View {
 public struct ScreenTitle: View {
     let text: String
     let size: CGFloat
-    
+
     public init(_ text: String, size: CGFloat = 28) {
         self.text = text
         self.size = size
     }
-    
+
     public var body: some View {
         Text(text.titleCased)
             .font(.gym(size, .extraBold, relativeTo: .largeTitle))
@@ -61,12 +61,12 @@ public struct ScreenTitle: View {
 public struct SectionHeader<Trailing: View>: View {
     let title: String
     let trailing: Trailing
-    
+
     public init(_ title: String, @ViewBuilder trailing: () -> Trailing = { EmptyView() }) {
         self.title = title
         self.trailing = trailing()
     }
-    
+
     public var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(title.titleCased)
@@ -83,13 +83,13 @@ public struct StatValue: View {
     let value: String
     let unit: String?
     let size: CGFloat
-    
+
     public init(_ value: String, unit: String? = nil, size: CGFloat = 28) {
         self.value = value
         self.unit = unit
         self.size = size
     }
-    
+
     public var body: some View {
         HStack(alignment: .lastTextBaseline, spacing: 3) {
             Text(value)
@@ -114,14 +114,14 @@ public struct StatBlock: View {
     let value: String
     let unit: String?
     let size: CGFloat
-    
+
     public init(_ label: String, value: String, unit: String? = nil, size: CGFloat = 26) {
         self.label = label
         self.value = value
         self.unit = unit
         self.size = size
     }
-    
+
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Kicker(label, size: 11, spacing: 1.5)

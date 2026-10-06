@@ -8,7 +8,7 @@ public struct ExerciseDetail {
     @ObservableState
     public struct State: Equatable {
         public let id: String
-        
+
         public var art: String = "bench-press"
         public var autoProgress: Bool = true
         public var autoWarmup: Bool = false
@@ -42,12 +42,12 @@ public struct ExerciseDetail {
             "Pause for a moment when the barbell touches your chest.",
         ]
         public var suggestInWorkouts: Bool = true
-        
+
         public init(id: String) {
             self.id = id
         }
     }
-    
+
     public enum Action: BindableAction {
         case archiveButtonTapped
         case binding(BindingAction<State>)
@@ -58,14 +58,14 @@ public struct ExerciseDetail {
         case restDecrementButtonTapped
         case restIncrementButtonTapped
         case similarTapped(id: String)
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in
@@ -93,7 +93,7 @@ public struct HistoryRow: Equatable, Identifiable, Sendable {
     public var sets: Int
     public var topWeight: String
     public var volume: String
-    
+
     public init(id: String, date: String, sets: Int, topWeight: String, volume: String) {
         self.id = id
         self.date = date
@@ -107,7 +107,7 @@ public struct SimilarRow: Equatable, Identifiable, Sendable {
     public var id: String
     public var art: String
     public var name: String
-    
+
     public init(id: String, art: String, name: String) {
         self.id = id
         self.art = art

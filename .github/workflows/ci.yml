@@ -19,7 +19,7 @@ jobs:
   manifest:
     name: Package manifest
     runs-on: ubuntu-latest
-    container: swift:6.2
+    container: swift:6.3
     steps:
       - uses: actions/checkout@v7
       - name: Parse Package.swift
@@ -29,9 +29,7 @@ jobs:
   format:
     name: Format check
     runs-on: ubuntu-latest
-    container: swift:6.2
-    # Non-blocking until the codebase has had its first full `swift format` pass.
-    continue-on-error: true
+    container: swift:6.3
     steps:
       - uses: actions/checkout@v7
       - name: swift format lint

@@ -8,11 +8,15 @@ public struct ProgressOverview {
     @ObservableState
     public struct State: Equatable {
         public var muscleRange: MuscleRange = .days7
-        
+
         /// Consistency grid, `activity[week][weekday]`, levels 0…4.
         // TODO: Remove templates elements
         // swiftlint:disable line_length
-        public var activity: [[Int]] = [[0, 4, 0, 0, 0, 4, 4], [4, 0, 4, 4, 0, 0, 0], [4, 0, 4, 0, 3, 0, 4], [0, 3, 0, 4, 4, 4, 0], [0, 4, 4, 0, 0, 4, 0], [4, 0, 0, 4, 2, 0, 4], [0, 4, 0, 4, 0, 4, 0], [4, 4, 0, 0, 4, 0, 4], [0, 0, 4, 3, 0, 4, 4], [4, 0, 4, 4, 4, 0, 0], [0, 4, 0, 4, 0, 4, 4], [0, 0, 0, 4, 4, 4, 4]]
+        public var activity: [[Int]] = [
+            [0, 4, 0, 0, 0, 4, 4], [4, 0, 4, 4, 0, 0, 0], [4, 0, 4, 0, 3, 0, 4], [0, 3, 0, 4, 4, 4, 0],
+            [0, 4, 4, 0, 0, 4, 0], [4, 0, 0, 4, 2, 0, 4], [0, 4, 0, 4, 0, 4, 0], [4, 4, 0, 0, 4, 0, 4],
+            [0, 0, 4, 3, 0, 4, 4], [4, 0, 4, 4, 4, 0, 0], [0, 4, 0, 4, 0, 4, 4], [0, 0, 0, 4, 4, 4, 4],
+        ]
         public var measureRows: [MeasureRow] = [
             .init(id: "neck", value: "38", unit: "cm"),
             .init(id: "chest", value: "104", unit: "cm"),
@@ -21,14 +25,19 @@ public struct ProgressOverview {
             .init(id: "thigh", value: nil, unit: "cm"),
             .init(id: "bodyfat", value: "14", unit: "%"),
         ]
-        
+
         /// Heat level 0…4 per muscle id for the last 7 days.
-        public var muscleLevels7: [String: Int] = ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 4, "hamstrings": 2, "glutes": 3, "back": 3, "biceps": 1, "calves": 1]
+        public var muscleLevels7: [String: Int] = [
+            "chest": 4, "triceps": 3, "shoulders": 2, "quads": 4, "hamstrings": 2, "glutes": 3, "back": 3, "biceps": 1,
+            "calves": 1,
+        ]
         /// Heat level 0…4 per muscle id for the last 30 days.
-        public var muscleLevels30: [String: Int] = ["chest": 4, "triceps": 4, "shoulders": 3, "quads": 4, "hamstrings": 3, "glutes": 4, "back": 4, "biceps": 3, "calves": 2, "abdomen": 1, "trapezius": 2, "forearm": 1]
+        public var muscleLevels30: [String: Int] = [
+            "chest": 4, "triceps": 4, "shoulders": 3, "quads": 4, "hamstrings": 3, "glutes": 4, "back": 4, "biceps": 3,
+            "calves": 2, "abdomen": 1, "trapezius": 2, "forearm": 1,
+        ]
         // swiftlint:enable line_length
-        
-        
+
         /// Recovery level 0 (fresh) … 4 (fatigued) per muscle id.
         public var recoveryLevels: [String: Int] = ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 1]
         public var recoveryPercent: Int = 72
@@ -40,7 +49,8 @@ public struct ProgressOverview {
         ]
         public var setsThisWeek: [Int] = [0, 0, 12, 10, 14, 10, 0]
         public var strength: [StrengthRow] = [
-            .init(id: "EIeI8Vf", name: "Barbell Bench Press", bestOneRm: "110 kg", curve: [95, 98, 101, 104, 108, 110]),
+            .init(
+                id: "EIeI8Vf", name: "Barbell Bench Press", bestOneRm: "110 kg", curve: [95, 98, 101, 104, 108, 110]),
             .init(id: "squat", name: "Barbell Full Squat", bestOneRm: "142 kg", curve: [120, 124, 128, 133, 138, 142]),
         ]
         public var streak: Int = 4
@@ -57,14 +67,14 @@ public struct ProgressOverview {
         public var weightDate: String = "Sep 19"
         public var weightTrend: [Double] = [78, 78.6, 79.4, 80, 80.2, 81, 81.4]
         public var weightUnit: String = "kg"
-        
+
         public init() {}
     }
-    
+
     public enum MuscleRange: Hashable, Sendable {
         case days7, days30, recovery
     }
-    
+
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case compareButtonTapped
@@ -73,14 +83,14 @@ public struct ProgressOverview {
         case measuresButtonTapped
         case shareButtonTapped
         case timelineButtonTapped
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { _, action in
@@ -107,7 +117,7 @@ public struct StrengthRow: Equatable, Identifiable, Sendable {
     public var name: String
     public var bestOneRm: String
     public var curve: [Double]
-    
+
     public init(id: String, name: String, bestOneRm: String, curve: [Double]) {
         self.id = id
         self.name = name
@@ -121,7 +131,7 @@ public struct RecordRow: Equatable, Identifiable, Sendable {
     public var name: String
     public var best: String
     public var date: String
-    
+
     public init(id: String, name: String, best: String, date: String) {
         self.id = id
         self.name = name
@@ -135,7 +145,7 @@ public struct MeasureRow: Equatable, Identifiable, Sendable {
     public var id: String
     public var value: String?
     public var unit: String
-    
+
     public init(id: String, value: String?, unit: String) {
         self.id = id
         self.value = value

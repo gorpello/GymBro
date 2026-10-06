@@ -6,12 +6,12 @@ import UIKit
 public struct GymIcon: View {
     let image: Image
     let size: CGFloat
-    
+
     public init(_ icon: Ph, weight: Ph.IconWeight = .regular, size: CGFloat = 20) {
         self.image = icon.weight(weight).renderingMode(.template)
         self.size = size
     }
-    
+
     public var body: some View {
         image
             .frame(width: size, height: size)
@@ -22,11 +22,11 @@ public struct GymIcon: View {
 /// Scale-down press feedback (`Pressable`).
 public struct PressableStyle: ButtonStyle {
     let scale: CGFloat
-    
+
     public init(scale: CGFloat = 0.96) {
         self.scale = scale
     }
-    
+
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .contentShape(.rect)
@@ -45,13 +45,13 @@ public struct PrimaryButtonStyle: ButtonStyle {
     let fill: Color
     let foreground: Color
     let height: CGFloat
-    
+
     public init(fill: Color = GymColor.ember, foreground: Color = GymColor.onEmber, height: CGFloat = 56) {
         self.fill = fill
         self.foreground = foreground
         self.height = height
     }
-    
+
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.gym(15.5, .bold, relativeTo: .headline))
@@ -77,7 +77,7 @@ extension ButtonStyle where Self == PrimaryButtonStyle {
 /// Secondary capsule on `bgRaised2` (`GhostButton`), 46 pt tall.
 public struct GhostButtonStyle: ButtonStyle {
     public init() {}
-    
+
     public func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.gym(13.5, .bold, relativeTo: .subheadline))
@@ -101,7 +101,7 @@ public struct RoundButton: View {
     let filled: Bool
     let size: CGFloat
     let action: () -> Void
-    
+
     public init(_ icon: Ph, label: String, filled: Bool = false, size: CGFloat = 36, action: @escaping () -> Void) {
         self.icon = icon
         self.label = label
@@ -109,7 +109,7 @@ public struct RoundButton: View {
         self.size = size
         self.action = action
     }
-    
+
     public var body: some View {
         Button(action: action) {
             GymIcon(icon, weight: .bold, size: size * 0.44)
@@ -129,14 +129,14 @@ public struct Pill: View {
     let selected: Bool
     let removable: Bool
     let action: () -> Void
-    
+
     public init(_ label: String, selected: Bool = false, removable: Bool = false, action: @escaping () -> Void = {}) {
         self.label = label
         self.selected = selected
         self.removable = removable
         self.action = action
     }
-    
+
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {
@@ -160,13 +160,13 @@ public struct ToggleChip: View {
     let label: String
     let isOn: Bool
     let action: () -> Void
-    
+
     public init(_ label: String, isOn: Bool, action: @escaping () -> Void) {
         self.label = label
         self.isOn = isOn
         self.action = action
     }
-    
+
     public var body: some View {
         Button(action: action) {
             HStack(spacing: 6) {

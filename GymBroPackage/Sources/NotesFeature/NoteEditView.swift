@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct NoteEditView: View {
     @Bindable var store: StoreOf<NoteEdit>
-    
+
     public init(store: StoreOf<NoteEdit>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
@@ -29,7 +29,9 @@ public struct NoteEditView: View {
                                 .background(GymColor.bgRaised, in: .rect(cornerRadius: 16))
                                 .overlay(
                                     RoundedRectangle(cornerRadius: 16)
-                                        .strokeBorder(selected ? NoteKindStyle.color(kind) : GymColor.border, lineWidth: selected ? 1.5 : 1)
+                                        .strokeBorder(
+                                            selected ? NoteKindStyle.color(kind) : GymColor.border,
+                                            lineWidth: selected ? 1.5 : 1)
                                 )
                             }
                             .buttonStyle(.pressable)
@@ -93,13 +95,17 @@ public struct NoteEditView: View {
         .toolbar {
             if store.id != nil {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button(role: .destructive) { store.send(.deleteButtonTapped) } label: { GymIcon(.trash, size: 18) }
-                        .accessibilityLabel(L10n.deleteNoteTitle)
+                    Button(role: .destructive) {
+                        store.send(.deleteButtonTapped)
+                    } label: {
+                        GymIcon(.trash, size: 18)
+                    }
+                    .accessibilityLabel(L10n.deleteNoteTitle)
                 }
             }
         }
     }
-    
+
     private func field(_ title: String, @ViewBuilder content: () -> some View) -> some View {
         VStack(alignment: .leading, spacing: 10) {
             Kicker(title, size: 11, spacing: 2)
