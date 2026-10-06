@@ -49,6 +49,6 @@ public nonisolated struct ExercisePreference: Hashable, Identifiable, Sendable {
     public var videoMarks: [Int: Int] = [:]
     public var goalTargetKg: Double?
     public var goalDueDate: Date?
-    
+
     public var id: Exercise.ID { exerciseID }
 }

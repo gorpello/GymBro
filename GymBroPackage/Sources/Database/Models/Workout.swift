@@ -12,7 +12,7 @@ public nonisolated struct Workout: Hashable, Identifiable, Sendable {
     public var routineID: Routine.ID?
     /// Logged after the fact, without the timer.
     public var isManual = false
-    
+
     // Live session only.
     public var currentPosition = 0
     public var elapsedBeforePauseSeconds = 0
@@ -21,7 +21,7 @@ public nonisolated struct Workout: Hashable, Identifiable, Sendable {
     public var restEndsAt: Date?
     /// Seconds left on a paused rest timer.
     public var restPausedRemaining: Int?
-    
+
     public var isLive: Bool { finishedAt == nil }
 }
 
@@ -47,6 +47,6 @@ public nonisolated struct WorkoutSet: Hashable, Identifiable, Sendable {
     public var durationSeconds: Int?
     public var distanceKm: Double?
     public var isCompleted = false
-    
+
     public var volumeKg: Double { kind.counts ? Double(reps) * weightKg : 0 }
 }

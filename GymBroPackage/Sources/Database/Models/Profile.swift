@@ -14,7 +14,7 @@ public nonisolated struct Award: Hashable, Identifiable, Sendable {
 @Table
 public nonisolated struct UserProfile: Hashable, Identifiable, Sendable {
     public static let singletonID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
-    
+
     public let id: UUID
     public var name = ""
     public var handle = ""
