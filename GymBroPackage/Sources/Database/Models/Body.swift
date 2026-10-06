@@ -20,6 +20,6 @@ public nonisolated struct ProgressEntry: Hashable, Identifiable, Sendable {
     public var frontPhoto: String?
     public var sidePhoto: String?
     public var backPhoto: String?
-    
+
     public var photos: [String] { [frontPhoto, sidePhoto, backPhoto].compactMap(\.self) }
 }

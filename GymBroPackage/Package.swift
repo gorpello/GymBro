@@ -46,6 +46,7 @@ let package = Package(
     .package(url: "https://github.com/phosphor-icons/swift", from: "2.0.0"),
     .package(url: "https://github.com/pointfreeco/sqlite-data", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.20.0"),
+    .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.9.0"),
   ],
   targets: [
     // MARK: - App
@@ -87,6 +88,7 @@ let package = Package(
     .target(
       name: "Database",
       dependencies: [
+        "GymAssets",
         .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
@@ -303,6 +305,14 @@ let package = Package(
 
     // MARK: - Tests
 
+    .testTarget(
+      name: "DatabaseTests",
+      dependencies: [
+        "Database",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
+      ]
+    ),
     .testTarget(
       name: "AppFeatureTests",
       dependencies: [

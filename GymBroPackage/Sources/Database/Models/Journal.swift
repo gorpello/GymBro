@@ -11,7 +11,7 @@ public nonisolated struct Note: Hashable, Identifiable, Sendable {
     /// First line is the title, the rest is the body.
     public var text = ""
     public var createdAt = Date()
-    
+
     public var title: String {
         text.trimmingCharacters(in: .whitespacesAndNewlines).split(separator: "\n").first.map(String.init) ?? ""
     }
