@@ -22,14 +22,14 @@ public struct AppFeature {
         public var progress = ProgressOverview.State()
         public var progressPath = StackState<AppPath.State>()
         public var selectedTab: Tab = .home
-        
+
         public init() {}
     }
-    
+
     public enum Tab: Hashable, Sendable {
         case home, progress, exercises, profile
     }
-    
+
     public enum Action {
         case destination(PresentationAction<AppDestination.Action>)
         case exercises(ExerciseLibrary.Action)
@@ -43,9 +43,9 @@ public struct AppFeature {
         case startWorkoutTapped
         case tabSelected(Tab)
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Scope(state: \.home, action: \.home) { Home() }
         Scope(state: \.progress, action: \.progress) { ProgressOverview() }
@@ -63,31 +63,31 @@ public struct AppFeature {
                     state.push(screen)
                 }
                 return .none
-                
+
             case let .exercises(.delegate(.navigate(route))),
                 let .home(.delegate(.navigate(route))),
                 let .profile(.delegate(.navigate(route))),
                 let .progress(.delegate(.navigate(route))):
                 state.navigate(to: route)
                 return .none
-                
+
             case let .exercisesPath(.element(_, action)),
                 let .homePath(.element(_, action)),
                 let .profilePath(.element(_, action)),
                 let .progressPath(.element(_, action)):
                 if let route = action.route { state.navigate(to: route) }
                 return .none
-                
+
             case .startWorkoutTapped:
                 state.destination = .start(StartWorkout.State())
                 return .none
-                
+
             case let .tabSelected(tab):
                 state.selectedTab = tab
                 return .none
-                
+
             case .destination, .exercises, .exercisesPath, .home, .homePath, .profile, .profilePath,
-                    .progress, .progressPath:
+                .progress, .progressPath:
                 return .none
             }
         }
@@ -107,7 +107,7 @@ extension AppFeature.State {
             push(screen)
         }
     }
-    
+
     mutating func push(_ screen: AppPath.State) {
         switch selectedTab {
         case .home: homePath.append(screen)

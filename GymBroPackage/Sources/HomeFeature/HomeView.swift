@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct HomeView: View {
     let store: StoreOf<Home>
-    
+
     public init(store: StoreOf<Home>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -40,7 +40,7 @@ public struct HomeView: View {
         .gymBackground()
         .toolbar(.hidden, for: .navigationBar)
     }
-    
+
     private var header: some View {
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
@@ -65,7 +65,7 @@ public struct HomeView: View {
         }
         .padding(.top, 8)
     }
-    
+
     private var todayCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             Kicker(L10n.todaysRoutine, size: 11)
@@ -124,7 +124,7 @@ public struct HomeView: View {
         .clipShape(.rect(cornerRadius: 28))
         .overlay(RoundedRectangle(cornerRadius: 28).strokeBorder(GymColor.border, lineWidth: 1))
     }
-    
+
     private var recommended: some View {
         VStack(alignment: .leading, spacing: 12) {
             Kicker(L10n.recommended, size: 11)
@@ -142,8 +142,9 @@ public struct HomeView: View {
         }
         .padding(.top, 8)
     }
-    
-    private func folder(_ title: String, detail: String, icon: Ph, hue: Int, action: @escaping () -> Void) -> some View {
+
+    private func folder(_ title: String, detail: String, icon: Ph, hue: Int, action: @escaping () -> Void) -> some View
+    {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 10) {
                 GymIcon(icon, weight: .fill, size: 18)
@@ -164,7 +165,7 @@ public struct HomeView: View {
         }
         .buttonStyle(.pressable)
     }
-    
+
     private var thisWeek: some View {
         HStack(alignment: .center) {
             StatBlock(L10n.volume, value: store.volume, unit: store.volumeUnit)

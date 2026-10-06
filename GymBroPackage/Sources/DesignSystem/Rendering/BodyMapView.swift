@@ -7,23 +7,25 @@ public struct BodyMapView: View {
     let color: (String) -> Color
     let outline: String?
     let onTap: ((String) -> Void)?
-    
+
     public init(color: @escaping (String) -> Color, outline: String? = nil, onTap: ((String) -> Void)? = nil) {
         self.color = color
         self.outline = outline
         self.onTap = onTap
     }
-    
+
     /// Selection map used by Train step 1: picked muscles in `ember`.
     public init(selected: Set<String>, onTap: ((String) -> Void)? = nil) {
         self.init(color: { selected.contains($0) ? GymColor.ember : GymColor.idleMuscle }, onTap: onTap)
     }
-    
+
     /// Heat map: `levels[id]` from 0 (untouched) to 4 (full volume).
-    public init(levels: [String: Int], tone: HeatTone = .ember, outline: String? = nil, onTap: ((String) -> Void)? = nil) {
+    public init(
+        levels: [String: Int], tone: HeatTone = .ember, outline: String? = nil, onTap: ((String) -> Void)? = nil
+    ) {
         self.init(color: { tone.color(level: levels[$0] ?? 0) }, outline: outline, onTap: onTap)
     }
-    
+
     public var body: some View {
         let geometry = GymAssets.body
         Canvas { context, size in
@@ -53,14 +55,14 @@ public struct BodyMapView: View {
         .onGeometryChange(for: CGFloat.self, of: \.size.width) { width = $0 }
         .accessibilityElement(children: .ignore)
     }
-    
+
     @State private var width: CGFloat = 1
-    
+
     private func canvasTapped(at location: CGPoint) {
         guard let onTap, let id = Self.muscle(at: location, width: width) else { return }
         onTap(id)
     }
-    
+
     /// Muscle under a point, probing the generous hit paths first.
     static func muscle(at point: CGPoint, width: CGFloat) -> String? {
         let geometry = GymAssets.body

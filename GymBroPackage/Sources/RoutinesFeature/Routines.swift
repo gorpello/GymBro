@@ -7,20 +7,26 @@ public struct Routines {
     @ObservableState
     public struct State: Equatable {
         @Presents public var templates: Templates.State?
-        
+
         // TODO: Remove templates elements
         // swiftlint:disable line_length
         public var groups: [RoutineGroup] = [
-            .init(id: "PPL", routines: [.init(id: "push", exerciseCount: 4, hue: 3, name: "Push"), .init(id: "pull", exerciseCount: 4, hue: 2, name: "Pull"), .init(id: "legs", exerciseCount: 4, hue: 5, name: "Legs")]),
+            .init(
+                id: "PPL",
+                routines: [
+                    .init(id: "push", exerciseCount: 4, hue: 3, name: "Push"),
+                    .init(id: "pull", exerciseCount: 4, hue: 2, name: "Pull"),
+                    .init(id: "legs", exerciseCount: 4, hue: 5, name: "Legs"),
+                ])
         ]
         // swiftlint:enable line_length
-        
+
         /// Routine name planned for each weekday, Monday first; `nil` is a rest day.
         public var weeklyPlan: [String?] = ["Push", nil, "Pull", nil, "Legs", "Push", nil]
-        
+
         public init() {}
     }
-    
+
     public enum Action {
         case aiRoutineButtonTapped
         case delegate(Delegate)
@@ -33,14 +39,14 @@ public struct Routines {
         case templates(PresentationAction<Templates.Action>)
         case templatesButtonTapped
         case weekdayTapped(Int)
-        
+
         public enum Delegate {
             case navigate(Route)
         }
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
@@ -73,7 +79,7 @@ public struct RoutineGroup: Equatable, Identifiable, Sendable {
     /// Group name; empty for ungrouped routines.
     public var id: String
     public var routines: [RoutineCard]
-    
+
     public init(id: String, routines: [RoutineCard]) {
         self.id = id
         self.routines = routines
@@ -86,7 +92,7 @@ public struct RoutineCard: Equatable, Identifiable, Sendable {
     /// Index into `GymColor.folderHues`.
     public var hue: Int
     public var name: String
-    
+
     public init(id: String, exerciseCount: Int, hue: Int, name: String) {
         self.id = id
         self.exerciseCount = exerciseCount
@@ -101,22 +107,28 @@ public struct Templates {
     @ObservableState
     public struct State: Equatable {
         public var templates: [TemplateRow] = [
-            .init(id: "fullbody", blurb: "Three full-body days a week. The simplest way to get strong.", dayCount: 3, name: "Full Body"),
-            .init(id: "ppl", blurb: "Push, pull and legs, each trained twice a week.", dayCount: 6, name: "Push Pull Legs"),
-            .init(id: "upperlower", blurb: "Upper and lower body on alternating days.", dayCount: 4, name: "Upper / Lower"),
+            .init(
+                id: "fullbody", blurb: "Three full-body days a week. The simplest way to get strong.", dayCount: 3,
+                name: "Full Body"),
+            .init(
+                id: "ppl", blurb: "Push, pull and legs, each trained twice a week.", dayCount: 6, name: "Push Pull Legs"
+            ),
+            .init(
+                id: "upperlower", blurb: "Upper and lower body on alternating days.", dayCount: 4, name: "Upper / Lower"
+            ),
         ]
-        
+
         public init() {}
     }
-    
+
     public enum Action {
         case templateTapped(id: String)
     }
-    
+
     @Dependency(\.dismiss) var dismiss
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Reduce { _, action in
             switch action {
@@ -132,7 +144,7 @@ public struct TemplateRow: Equatable, Identifiable, Sendable {
     public var blurb: String
     public var dayCount: Int
     public var name: String
-    
+
     public init(id: String, blurb: String, dayCount: Int, name: String) {
         self.id = id
         self.blurb = blurb

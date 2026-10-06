@@ -14,10 +14,9 @@ public enum SVGPath {
         cache.withLock { $0[d] = path }
         return path
     }
-    
+
     private static let cache = Mutex<[String: Path]>([:])
 }
-
 
 private struct Parser {
     let s: [UInt8]
@@ -27,9 +26,9 @@ private struct Parser {
     var start = CGPoint.zero
     var lastControl: CGPoint?
     var lastQuad: CGPoint?
-    
+
     init(_ s: [UInt8]) { self.s = s }
-    
+
     mutating func parse() -> Path {
         var command: UInt8 = 0
         while true {
@@ -48,7 +47,7 @@ private struct Parser {
         }
         return path
     }
-    
+
     mutating func run(_ c: UInt8) {
         let relative = c >= UInt8(ascii: "a")
         let base = relative ? current : .zero
@@ -95,7 +94,7 @@ private struct Parser {
             guard
                 let rx = number(), let ry = number(), let rotation = number(),
                 let large = flag(), let sweep = flag(), let p = point(base)
-                    else { return skip() }
+            else { return skip() }
             arc(to: p, rx: rx, ry: ry, rotation: rotation, large: large, sweep: sweep)
             current = p
             reset()
@@ -107,22 +106,22 @@ private struct Parser {
             skip()
         }
     }
-    
+
     mutating func reset() {
         lastControl = nil
         lastQuad = nil
     }
-    
+
     /// Stops parsing on malformed input instead of looping forever.
     mutating func skip() { i = s.count }
-    
+
     func reflect(_ control: CGPoint?) -> CGPoint {
         guard let control else { return current }
         return CGPoint(x: 2 * current.x - control.x, y: 2 * current.y - control.y)
     }
-    
+
     // MARK: Arcs (SVG 1.1 implementation notes, F.6)
-    
+
     mutating func arc(to end: CGPoint, rx: Double, ry: Double, rotation: Double, large: Bool, sweep: Bool) {
         var rx = abs(rx), ry = abs(ry)
         let p0 = current
@@ -148,7 +147,7 @@ private struct Parser {
         let cy1 = -coef * ry * x1 / rx
         let cx = cosPhi * cx1 - sinPhi * cy1 + (p0.x + end.x) / 2
         let cy = sinPhi * cx1 + cosPhi * cy1 + (p0.y + end.y) / 2
-        
+
         func angle(_ ux: Double, _ uy: Double, _ vx: Double, _ vy: Double) -> Double {
             let a = atan2(ux * vy - uy * vx, ux * vx + uy * vy)
             return a
@@ -157,7 +156,7 @@ private struct Parser {
         var delta = angle((x1 - cx1) / rx, (y1 - cy1) / ry, (-x1 - cx1) / rx, (-y1 - cy1) / ry)
         if !sweep && delta > 0 { delta -= 2 * .pi }
         if sweep && delta < 0 { delta += 2 * .pi }
-        
+
         // Approximate with cubic segments of at most 90°.
         let segments = max(1, Int((abs(delta) / (.pi / 2)).rounded(.up)))
         let step = delta / Double(segments)
@@ -177,9 +176,9 @@ private struct Parser {
             a1 = a2
         }
     }
-    
+
     // MARK: Lexing
-    
+
     func isCommand(_ c: UInt8) -> Bool {
         switch c | 0x20 {
         case UInt8(ascii: "m"), UInt8(ascii: "l"), UInt8(ascii: "h"), UInt8(ascii: "v"), UInt8(ascii: "c"),
@@ -189,25 +188,25 @@ private struct Parser {
             return false
         }
     }
-    
+
     mutating func skipSeparators() {
         while i < s.count, s[i] == 0x20 || s[i] == 0x2C || s[i] == 0x0A || s[i] == 0x0D || s[i] == 0x09 {
             i += 1
         }
     }
-    
+
     mutating func point(_ base: CGPoint) -> CGPoint? {
         guard let x = number(), let y = number() else { return nil }
         return CGPoint(x: base.x + x, y: base.y + y)
     }
-    
+
     mutating func flag() -> Bool? {
         skipSeparators()
         guard i < s.count, s[i] == UInt8(ascii: "0") || s[i] == UInt8(ascii: "1") else { return nil }
         defer { i += 1 }
         return s[i] == UInt8(ascii: "1")
     }
-    
+
     mutating func number() -> Double? {
         skipSeparators()
         let begin = i

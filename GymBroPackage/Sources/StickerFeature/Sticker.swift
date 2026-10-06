@@ -10,23 +10,25 @@ public struct Sticker {
         public var rotation: Double = 0
         public var scale: Double = 1
         public var style: Style = .workout
-        
+
         public var dateTitle: String = "Saturday, Sep 19"
         public var duration: String = "58 min"
-        public var exerciseNames: [String] = ["Barbell Bench Press", "Dumbbell Incline Bench Press", "Overhead Press", "Rope Triceps Pushdown"]
+        public var exerciseNames: [String] = [
+            "Barbell Bench Press", "Dumbbell Incline Bench Press", "Overhead Press", "Rope Triceps Pushdown",
+        ]
         public var hasPhoto: Bool = false
         public var sets: Int = 12
         public var streak: Int = 4
         public var volume: String = "8.4 t"
         public var weekDone: [Bool] = [false, false, true, true, true, true, false]
-        
+
         public init() {}
     }
-    
+
     public enum Style: Hashable, Sendable {
         case workout, streak, date, week
     }
-    
+
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case cameraButtonTapped
@@ -37,9 +39,9 @@ public struct Sticker {
         case stickerPinched(magnification: Double)
         case stickerRotated(degrees: Double)
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in

@@ -5,7 +5,7 @@ import SwiftUI
 /// Colour and icon for each journal note kind (`note_kit.dart`).
 enum NoteKindStyle {
     static let kinds = ["note", "plan", "done", "pain"]
-    
+
     static func color(_ kind: String) -> Color {
         switch kind {
         case "plan": GymColor.warn
@@ -14,7 +14,7 @@ enum NoteKindStyle {
         default: GymColor.info
         }
     }
-    
+
     static func icon(_ kind: String) -> Ph {
         switch kind {
         case "plan": .crosshair
@@ -28,7 +28,7 @@ enum NoteKindStyle {
 /// Small coloured tag: icon + kind name in caps.
 struct NoteKindTag: View {
     let kind: String
-    
+
     var body: some View {
         let color = NoteKindStyle.color(kind)
         HStack(spacing: 5) {

@@ -7,7 +7,7 @@ public struct PlanImport {
     public struct State: Equatable {
         public var text = ""
         public var usesTheirSchedule = false
-        
+
         /// Routines found in the pasted text.
         public var found: [ImportedRoutine] = [
             .init(id: "a", exerciseCount: 5, name: "Upper A", weekday: "Mon"),
@@ -15,21 +15,21 @@ public struct PlanImport {
         ]
         /// Exercise names that did not match the library.
         public var missing: Int = 1
-        
+
         public init() {}
     }
-    
+
     public enum Action: BindableAction {
         case addButtonTapped
         case binding(BindingAction<State>)
         case chooseFileButtonTapped
         case pasteButtonTapped
     }
-    
+
     @Dependency(\.dismiss) var dismiss
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { _, action in
@@ -49,7 +49,7 @@ public struct ImportedRoutine: Equatable, Identifiable, Sendable {
     public var name: String
     /// Short weekday name it is planned on, if any.
     public var weekday: String?
-    
+
     public init(id: String, exerciseCount: Int, name: String, weekday: String?) {
         self.id = id
         self.exerciseCount = exerciseCount

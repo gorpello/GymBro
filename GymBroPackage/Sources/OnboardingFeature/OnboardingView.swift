@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct OnboardingView: View {
     @Bindable var store: StoreOf<Onboarding>
-    
+
     public init(store: StoreOf<Onboarding>) {
         self.store = store
     }
-    
+
     public var body: some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
@@ -42,7 +42,7 @@ public struct OnboardingView: View {
         .gymBackground()
         .animation(.snappy, value: store.step)
     }
-    
+
     @ViewBuilder
     private var content: some View {
         switch store.step {
@@ -71,8 +71,10 @@ public struct OnboardingView: View {
                         .fixedSize()
                 }
                 OptionRow(L10n.heightLabel) {
-                    Stepper(value: $store.heightCm, in: 100...230) { Text("\(Int(store.heightCm)) cm").font(.gym(16, .bold)) }
-                        .fixedSize()
+                    Stepper(value: $store.heightCm, in: 100...230) {
+                        Text("\(Int(store.heightCm)) cm").font(.gym(16, .bold))
+                    }
+                    .fixedSize()
                 }
                 OptionRow(L10n.weightLabel) {
                     Stepper(value: $store.weightKg, in: 30...250, step: 0.5) {
@@ -89,7 +91,9 @@ public struct OnboardingView: View {
                         .font(.gym(18, .extraBold))
                         .foregroundStyle(store.weeklyGoal == n ? GymColor.onEmber : GymColor.text)
                         .frame(maxWidth: .infinity, minHeight: 52)
-                        .background(store.weeklyGoal == n ? GymColor.ember : GymColor.bgRaised, in: .rect(cornerRadius: 14))
+                        .background(
+                            store.weeklyGoal == n ? GymColor.ember : GymColor.bgRaised, in: .rect(cornerRadius: 14)
+                        )
                         .accessibilityAddTraits(store.weeklyGoal == n ? .isSelected : [])
                 }
             }
@@ -104,7 +108,7 @@ public struct OnboardingView: View {
             }
         }
     }
-    
+
     private func title(_ title: String, _ why: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(title).font(.gym(28, .extraBold)).foregroundStyle(GymColor.text)

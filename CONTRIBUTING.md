@@ -40,7 +40,7 @@ in the GymBro target's *Signing & Capabilities* tab. Please don't commit that ch
 
 ## Style
 
-- 2-space indentation, 120-column lines. The repo's `.swift-format` and `.editorconfig` encode this.
+- 4-space indentation, 120-column lines. The repo's `.swift-format` and `.editorconfig` encode this.
 - Format before you push:
 
   ```bash

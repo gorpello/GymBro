@@ -5,16 +5,19 @@ import SwiftUI
 
 public struct StartWorkoutView: View {
     @Bindable var store: StoreOf<StartWorkout>
-    
+
     public init(store: StoreOf<StartWorkout>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
-                SheetTitle(store.isLogging ? L10n.logTitle : L10n.startTitle, subtitle: store.isLogging ? L10n.logHint : store.dateTitle)
-                    .padding(.top, 8)
+                SheetTitle(
+                    store.isLogging ? L10n.logTitle : L10n.startTitle,
+                    subtitle: store.isLogging ? L10n.logHint : store.dateTitle
+                )
+                .padding(.top, 8)
                 SegToggle([(false, L10n.startTitle), (true, L10n.logTitle)], selection: $store.isLogging, fontSize: 13)
                 if let today = store.todayRoutine {
                     Kicker(L10n.todaysRoutine, size: 11, spacing: 2)
@@ -38,7 +41,7 @@ public struct StartWorkoutView: View {
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
     }
-    
+
     private func routineRow(_ row: StartRoutineRow, prominent: Bool) -> some View {
         Button {
             store.send(.routineTapped(id: row.id))
@@ -65,7 +68,7 @@ public struct StartWorkoutView: View {
         }
         .buttonStyle(.pressable)
     }
-    
+
     private func option(_ title: String, icon: Ph, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 10) {

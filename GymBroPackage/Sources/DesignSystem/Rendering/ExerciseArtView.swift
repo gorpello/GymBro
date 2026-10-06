@@ -1,7 +1,7 @@
 import GymAssets
 import PhosphorSwift
-import Synchronization
 import SwiftUI
+import Synchronization
 
 /// Exercise illustration drawn from the Workout Guide / Everkinetic path frames and tinted with
 /// the current theme (`exercise_art.dart`). Live art cross-fades frame to frame every 1.56 s.
@@ -9,13 +9,13 @@ public struct ExerciseArtView: View {
     let art: String
     let color: Color
     let live: Bool
-    
+
     public init(art: String, color: Color = GymColor.text, live: Bool = false) {
         self.art = art
         self.color = color
         self.live = live
     }
-    
+
     public var body: some View {
         if let frames = ArtCache.frames(art) {
             if live && frames.paths.count > 1 {
@@ -34,7 +34,7 @@ public struct ExerciseArtView: View {
             }
         }
     }
-    
+
     private func canvas(_ frames: ArtFrames, time: TimeInterval?) -> some View {
         Canvas { context, size in
             let b = frames.bounds
@@ -45,7 +45,7 @@ public struct ExerciseArtView: View {
             context.translateBy(x: size.width / 2, y: size.height / 2)
             context.scaleBy(x: scale, y: scale)
             context.translateBy(x: -b.midX, y: -b.midY)
-            
+
             let n = frames.paths.count
             guard let time, n > 1 else {
                 context.fill(frames.paths[0], with: .color(color), style: FillStyle(eoFill: true))
@@ -64,16 +64,16 @@ public struct ExerciseArtView: View {
             if blend > 0 { draw(&context, frames.paths[to], opacity: blend) }
         }
     }
-    
+
     private func draw(_ context: inout GraphicsContext, _ path: Path, opacity: Double) {
         guard opacity > 0.01 else { return }
         context.fill(path, with: .color(color.opacity(opacity)), style: FillStyle(eoFill: true))
     }
-    
+
     private func easeInOut(_ t: Double) -> Double {
         t < 0.5 ? 4 * t * t * t : 1 - pow(-2 * t + 2, 3) / 2
     }
-    
+
     static let cycle: TimeInterval = 1.56
 }
 
@@ -84,12 +84,13 @@ struct ArtFrames: Sendable {
 
 enum ArtCache {
     private static let cache = Mutex<[String: ArtFrames]>([:])
-    
+
     static func frames(_ art: String) -> ArtFrames? {
         if let hit = cache.withLock({ $0[art] }) { return hit }
         let paths = GymAssets.artFrames(art).map(SVGPath.path)
         guard let first = paths.first else { return nil }
-        let frames = ArtFrames(paths: paths, bounds: paths.dropFirst().reduce(first.boundingRect) { $0.union($1.boundingRect) })
+        let frames = ArtFrames(
+            paths: paths, bounds: paths.dropFirst().reduce(first.boundingRect) { $0.union($1.boundingRect) })
         cache.withLock { $0[art] = frames }
         return frames
     }

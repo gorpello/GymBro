@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct ShareCardView: View {
     @Bindable var store: StoreOf<ShareCard>
-    
+
     public init(store: StoreOf<ShareCard>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(spacing: 18) {
@@ -38,7 +38,7 @@ public struct ShareCardView: View {
         .presentationDetents([.large])
         .presentationDragIndicator(.visible)
     }
-    
+
     @ViewBuilder
     private var preview: some View {
         switch store.kind {
@@ -64,11 +64,11 @@ public struct ShareCardView: View {
 
 public struct StravaExportView: View {
     let store: StoreOf<StravaExport>
-    
+
     public init(store: StoreOf<StravaExport>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {

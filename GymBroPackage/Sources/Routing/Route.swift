@@ -2,7 +2,7 @@
 /// `AppFeature` decides whether the route is pushed onto the current tab or presented.
 public enum Route: Equatable, Sendable {
     // MARK: Pushed onto the current tab's stack
-    
+
     case about
     case aiPlan
     case awards
@@ -20,9 +20,9 @@ public enum Route: Equatable, Sendable {
     case timeline
     case toolDetail(id: String)
     case tools
-    
+
     // MARK: Presented modally
-    
+
     case onboarding
     case planImport
     case session

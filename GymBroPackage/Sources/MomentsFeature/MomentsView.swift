@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct MomentsView: View {
     let store: StoreOf<Moments>
-    
+
     public init(store: StoreOf<Moments>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 22) {
@@ -44,7 +44,11 @@ public struct MomentsView: View {
             Button {
                 store.send(.takePhotoButtonTapped)
             } label: {
-                Label { Text(L10n.snapNow) } icon: { GymIcon(.camera, weight: .fill, size: 16) }
+                Label {
+                    Text(L10n.snapNow)
+                } icon: {
+                    GymIcon(.camera, weight: .fill, size: 16)
+                }
             }
             .buttonStyle(.primary)
             .padding(.horizontal, 20)

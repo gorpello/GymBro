@@ -19,12 +19,12 @@ extension AppFeature {
 /// The app's root view; owns the root store.
 public struct AppRootView: View {
     @State private var store = Store(initialState: AppFeature.State()) { AppFeature() }
-    
+
     public init() {}
-    
+
     public var body: some View {
         AppView(store: store)
-        // GymMane defaults to the dark theme; Settings will drive this once it has data.
+            // GymMane defaults to the dark theme; Settings will drive this once it has data.
             .preferredColorScheme(.dark)
     }
 }

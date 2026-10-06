@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct MeasuresView: View {
     @Bindable var store: StoreOf<Measures>
-    
+
     public init(store: StoreOf<Measures>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
@@ -24,9 +24,12 @@ public struct MeasuresView: View {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(L10n.measureName(row.id)).font(.gym(15.5, .bold)).foregroundStyle(GymColor.text)
                                 if let last = row.history.last {
-                                    StatValue(last.value.formatted(.number.precision(.fractionLength(0...1))), unit: unit(row.id), size: 20)
+                                    StatValue(
+                                        last.value.formatted(.number.precision(.fractionLength(0...1))),
+                                        unit: unit(row.id), size: 20)
                                 } else {
-                                    Text(L10n.measureNoneYet).font(.gym(13, .medium)).foregroundStyle(GymColor.textTertiary)
+                                    Text(L10n.measureNoneYet).font(.gym(13, .medium)).foregroundStyle(
+                                        GymColor.textTertiary)
                                 }
                             }
                             Spacer()
@@ -49,7 +52,7 @@ public struct MeasuresView: View {
             MeasureEntryView(store: entryStore, unit: unit(entryStore.key))
         }
     }
-    
+
     private func unit(_ key: String) -> String {
         key == "bodyfat" ? "%" : store.unit
     }
@@ -58,7 +61,7 @@ public struct MeasuresView: View {
 struct MeasureEntryView: View {
     let store: StoreOf<MeasureEntry>
     let unit: String
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
@@ -81,11 +84,16 @@ struct MeasureEntryView: View {
                             HStack {
                                 Text(reading.date).font(.gym(14.5, .semibold)).foregroundStyle(GymColor.text)
                                 Spacer()
-                                Text("\(reading.value.formatted()) \(unit)").font(.gym(14.5, .bold)).foregroundStyle(GymColor.text)
-                                Button { store.send(.deleteReadingTapped(id: reading.id)) } label: { GymIcon(.trash, size: 16) }
-                                    .foregroundStyle(GymColor.textTertiary)
-                                    .padding(.leading, 8)
-                                    .accessibilityLabel(L10n.delete)
+                                Text("\(reading.value.formatted()) \(unit)").font(.gym(14.5, .bold)).foregroundStyle(
+                                    GymColor.text)
+                                Button {
+                                    store.send(.deleteReadingTapped(id: reading.id))
+                                } label: {
+                                    GymIcon(.trash, size: 16)
+                                }
+                                .foregroundStyle(GymColor.textTertiary)
+                                .padding(.leading, 8)
+                                .accessibilityLabel(L10n.delete)
                             }
                             .padding(.vertical, 10)
                         }

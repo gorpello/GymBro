@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct ExerciseDetailView: View {
     @Bindable var store: StoreOf<ExerciseDetail>
-    
+
     public init(store: StoreOf<ExerciseDetail>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
@@ -48,7 +48,7 @@ public struct ExerciseDetailView: View {
             }
         }
     }
-    
+
     private var muscles: some View {
         FlowLayout {
             Pill(L10n.muscle(store.primary), selected: true)
@@ -56,7 +56,7 @@ public struct ExerciseDetailView: View {
             Pill(L10n.equipment(store.equipment))
         }
     }
-    
+
     private var recordAndGoal: some View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
@@ -84,7 +84,7 @@ public struct ExerciseDetailView: View {
             .softCard(padding: 18, radius: 22)
         }
     }
-    
+
     private var history: some View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(L10n.history)
@@ -119,7 +119,7 @@ public struct ExerciseDetailView: View {
             }
         }
     }
-    
+
     private var notesRow: some View {
         Button {
             store.send(.notesButtonTapped)
@@ -144,7 +144,7 @@ public struct ExerciseDetailView: View {
         }
         .buttonStyle(.pressable(scale: 0.98))
     }
-    
+
     private var steps: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(L10n.howTo)
@@ -168,7 +168,7 @@ public struct ExerciseDetailView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private var similar: some View {
         if !store.similar.isEmpty {
@@ -199,7 +199,7 @@ public struct ExerciseDetailView: View {
             }
         }
     }
-    
+
     private var settings: some View {
         GroupCard {
             OptionRow(L10n.suggestInWorkouts, detail: L10n.suggestInWorkoutsHint) {

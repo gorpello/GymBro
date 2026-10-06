@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct AwardsView: View {
     let store: StoreOf<Awards>
-    
+
     public init(store: StoreOf<Awards>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -20,7 +20,7 @@ public struct AwardsView: View {
         }
         .gymScreen(L10n.awardsTitle, subtitle: "\(store.earned.count)/\(store.earned.count + store.locked.count)")
     }
-    
+
     private func grid(_ title: String, rows: [AwardRow], locked: Bool) -> some View {
         VStack(alignment: .leading, spacing: 14) {
             Kicker(title, size: 11, spacing: 2)

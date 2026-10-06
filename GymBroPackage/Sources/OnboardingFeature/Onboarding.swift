@@ -14,14 +14,14 @@ public struct Onboarding {
         public var units = "kg"
         public var weeklyGoal = 4
         public var weightKg = 75.0
-        
+
         public init() {}
     }
-    
+
     public enum Step: Int, CaseIterable, Sendable {
         case welcome, name, body, goal, units, places
     }
-    
+
     public enum Action: BindableAction {
         case backButtonTapped
         case binding(BindingAction<State>)
@@ -29,11 +29,11 @@ public struct Onboarding {
         case placeTapped(String)
         case skipButtonTapped
     }
-    
+
     @Dependency(\.dismiss) var dismiss
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in

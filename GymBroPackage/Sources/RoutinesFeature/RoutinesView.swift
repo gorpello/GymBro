@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct RoutinesView: View {
     @Bindable var store: StoreOf<Routines>
-    
+
     public init(store: StoreOf<Routines>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -28,10 +28,13 @@ public struct RoutinesView: View {
                             GymIcon(.folder, size: 18).foregroundStyle(GymColor.accent)
                             Text(group.id).font(.gym(16, .extraBold)).foregroundStyle(GymColor.text)
                             Spacer()
-                            Text("\(group.routines.count)").font(.gym(13, .semibold)).foregroundStyle(GymColor.textTertiary)
+                            Text("\(group.routines.count)").font(.gym(13, .semibold)).foregroundStyle(
+                                GymColor.textTertiary)
                         }
                     }
-                    LazyVGrid(columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14) {
+                    LazyVGrid(
+                        columns: [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)], spacing: 14
+                    ) {
                         ForEach(group.routines) { routine in
                             RoutineFolderCard(routine: routine, group: group.id) {
                                 store.send(.routineTapped(id: routine.id))
@@ -61,17 +64,25 @@ public struct RoutinesView: View {
         .gymScreen(L10n.routines)
         .toolbar {
             ToolbarItemGroup(placement: .topBarTrailing) {
-                Button { store.send(.importButtonTapped) } label: { GymIcon(.downloadSimple, size: 18) }
-                    .accessibilityLabel(L10n.importRoutines)
-                Button { store.send(.shareButtonTapped) } label: { GymIcon(.shareNetwork, size: 18) }
-                    .accessibilityLabel(L10n.shareWeek)
+                Button {
+                    store.send(.importButtonTapped)
+                } label: {
+                    GymIcon(.downloadSimple, size: 18)
+                }
+                .accessibilityLabel(L10n.importRoutines)
+                Button {
+                    store.send(.shareButtonTapped)
+                } label: {
+                    GymIcon(.shareNetwork, size: 18)
+                }
+                .accessibilityLabel(L10n.shareWeek)
             }
         }
         .sheet(item: $store.scope(state: \.templates, action: \.templates)) { templatesStore in
             TemplatesView(store: templatesStore)
         }
     }
-    
+
     private var weeklyPlan: some View {
         VStack(spacing: 0) {
             ForEach(Array(L10n.weekdayShortNames.enumerated()), id: \.offset) { index, day in
@@ -106,11 +117,11 @@ struct RoutineFolderCard: View {
     let onOpen: () -> Void
     let onStart: () -> Void
     let onDuplicate: () -> Void
-    
+
     @Environment(\.colorScheme) private var colorScheme
-    
+
     private static let tab: CGFloat = 16
-    
+
     var body: some View {
         let hue = GymColor.folderHues[routine.hue % GymColor.folderHues.count]
         let dark = colorScheme == .dark
@@ -148,7 +159,8 @@ struct RoutineFolderCard: View {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .top) {
                             HStack(spacing: 4) {
-                                Text(routine.name).font(.gym(18, .extraBold)).foregroundStyle(GymColor.text).lineLimit(1)
+                                Text(routine.name).font(.gym(18, .extraBold)).foregroundStyle(GymColor.text).lineLimit(
+                                    1)
                                 GymIcon(.caretRight, weight: .bold, size: 12).foregroundStyle(GymColor.textSecondary)
                             }
                             Spacer()
@@ -162,10 +174,13 @@ struct RoutineFolderCard: View {
                             }
                         }
                         Spacer()
-                        Text([group, L10n.exerciseCount(routine.exerciseCount)].filter { !$0.isEmpty }.joined(separator: " · "))
-                            .font(.gym(12.5, .semibold))
-                            .foregroundStyle(GymColor.textSecondary)
-                            .lineLimit(1)
+                        Text(
+                            [group, L10n.exerciseCount(routine.exerciseCount)].filter { !$0.isEmpty }.joined(
+                                separator: " · ")
+                        )
+                        .font(.gym(12.5, .semibold))
+                        .foregroundStyle(GymColor.textSecondary)
+                        .lineLimit(1)
                     }
                     .padding(EdgeInsets(top: 12, leading: 14, bottom: 10, trailing: 8))
                     .frame(height: 100)
@@ -188,14 +203,15 @@ struct RoutineFolderCard: View {
                 .frame(maxWidth: .infinity, minHeight: 46)
             }
             .buttonStyle(.plain)
-            .background(GymColor.bgRaised, in: UnevenRoundedRectangle(bottomLeadingRadius: 22, bottomTrailingRadius: 22))
+            .background(
+                GymColor.bgRaised, in: UnevenRoundedRectangle(bottomLeadingRadius: 22, bottomTrailingRadius: 22))
         }
     }
 }
 
 struct TemplatesView: View {
     let store: StoreOf<Templates>
-    
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 12) {
@@ -209,7 +225,8 @@ struct TemplatesView: View {
                             HStack {
                                 Text(template.name).font(.gym(17, .extraBold)).foregroundStyle(GymColor.text)
                                 Spacer()
-                                Text(L10n.dayCount(template.dayCount)).font(.gym(12.5, .semibold)).foregroundStyle(GymColor.textSecondary)
+                                Text(L10n.dayCount(template.dayCount)).font(.gym(12.5, .semibold)).foregroundStyle(
+                                    GymColor.textSecondary)
                             }
                             Text(template.blurb)
                                 .font(.gym(13, .medium))

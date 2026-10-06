@@ -10,17 +10,17 @@ public struct Moments {
             .init(id: "This week", photos: ["m3", "m4", "m5"]),
             .init(id: "August", photos: ["m6", "m7", "m8", "m9"]),
         ]
-        
+
         public init() {}
     }
-    
+
     public enum Action {
         case photoTapped(id: String)
         case takePhotoButtonTapped
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Reduce { _, action in
             switch action {
@@ -36,7 +36,7 @@ public struct MomentGroup: Equatable, Identifiable, Sendable {
     public var id: String
     /// Photo file names.
     public var photos: [String]
-    
+
     public init(id: String, photos: [String]) {
         self.id = id
         self.photos = photos

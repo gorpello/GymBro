@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct AIPlanView: View {
     @Bindable var store: StoreOf<AIPlan>
-    
+
     public init(store: StoreOf<AIPlan>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
@@ -55,7 +55,7 @@ public struct AIPlanView: View {
         }
         .gymScreen(L10n.aiRoutine)
     }
-    
+
     private func step(_ number: Int, _ text: String) -> some View {
         HStack(alignment: .firstTextBaseline, spacing: 12) {
             Text("\(number)")

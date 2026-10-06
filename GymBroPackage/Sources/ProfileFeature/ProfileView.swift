@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct ProfileView: View {
     let store: StoreOf<Profile>
-    
+
     public init(store: StoreOf<Profile>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 0) {
@@ -29,7 +29,7 @@ public struct ProfileView: View {
         .gymBackground()
         .toolbar(.hidden, for: .navigationBar)
     }
-    
+
     private var banner: some View {
         ZStack(alignment: .bottom) {
             // The photo fills a container sized by the screen, so its own aspect ratio can't widen the layout.
@@ -70,7 +70,7 @@ public struct ProfileView: View {
         }
         .padding(.bottom, 44)
     }
-    
+
     private var identity: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
@@ -96,7 +96,7 @@ public struct ProfileView: View {
             }
         }
     }
-    
+
     private var stats: some View {
         ScrollView(.horizontal) {
             HStack(spacing: 28) {
@@ -111,7 +111,7 @@ public struct ProfileView: View {
         .scrollIndicators(.hidden)
         .padding(.horizontal, -20)
     }
-    
+
     private var medals: some View {
         VStack(alignment: .leading, spacing: 16) {
             Button {
@@ -150,7 +150,7 @@ public struct ProfileView: View {
             }
         }
     }
-    
+
     private var photos: some View {
         VStack(alignment: .leading, spacing: 16) {
             Button {
@@ -207,7 +207,7 @@ public struct ProfileView: View {
             }
         }
     }
-    
+
     private var year: some View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(L10n.yearTitle)
@@ -236,5 +236,3 @@ public struct ProfileView: View {
 #Preview {
     ProfileView(store: Store(initialState: Profile.State()) { Profile() })
 }
-
-

@@ -1,7 +1,7 @@
 import ComposableArchitecture
 import OnboardingFeature
-import Routing
 import RoutinesFeature
+import Routing
 import SessionFeature
 import ShareFeature
 import TrainFeature

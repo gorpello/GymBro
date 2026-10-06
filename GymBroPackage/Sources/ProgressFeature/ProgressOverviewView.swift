@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct ProgressOverviewView: View {
     @Bindable var store: StoreOf<ProgressOverview>
-    
+
     public init(store: StoreOf<ProgressOverview>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -37,7 +37,7 @@ public struct ProgressOverviewView: View {
         .gymBackground()
         .toolbar(.hidden, for: .navigationBar)
     }
-    
+
     private var header: some View {
         HStack {
             ScreenTitle(L10n.progressTitle, size: 30)
@@ -48,7 +48,7 @@ public struct ProgressOverviewView: View {
         }
         .padding(.top, 8)
     }
-    
+
     private var volumeTile: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -68,7 +68,7 @@ public struct ProgressOverviewView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .softCard(padding: 18, radius: 24)
     }
-    
+
     private var weightTile: some View {
         VStack(alignment: .leading, spacing: 4) {
             Kicker(L10n.weightLabel, size: 11, spacing: 1.5)
@@ -90,7 +90,7 @@ public struct ProgressOverviewView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
         .softCard(padding: 18, radius: 24)
     }
-    
+
     private var consistency: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -118,13 +118,13 @@ public struct ProgressOverviewView: View {
         }
         .softCard(padding: 20, radius: 24)
     }
-    
+
     private func totalTile(_ label: String, value: String, unit: String? = nil) -> some View {
         StatBlock(label, value: value, unit: unit, size: 28)
             .frame(maxWidth: .infinity, alignment: .leading)
             .softCard(padding: 18, radius: 22)
     }
-    
+
     private var thisWeek: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
@@ -153,7 +153,7 @@ public struct ProgressOverviewView: View {
         }
         .softCard(padding: 20, radius: 24)
     }
-    
+
     private var muscleMap: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -189,7 +189,7 @@ public struct ProgressOverviewView: View {
         }
         .softCard(padding: 20, radius: 24)
     }
-    
+
     private var strength: some View {
         VStack(alignment: .leading, spacing: 4) {
             Kicker(L10n.strength1rm, size: 11, spacing: 1.5)
@@ -224,7 +224,7 @@ public struct ProgressOverviewView: View {
         }
         .softCard(padding: 20, radius: 24)
     }
-    
+
     private var records: some View {
         VStack(alignment: .leading, spacing: 4) {
             Kicker(L10n.personalRecords, size: 11, spacing: 1.5)
@@ -251,7 +251,7 @@ public struct ProgressOverviewView: View {
         }
         .softCard(padding: 20, radius: 24)
     }
-    
+
     private var timeline: some View {
         Button {
             store.send(.timelineButtonTapped)
@@ -280,7 +280,7 @@ public struct ProgressOverviewView: View {
         }
         .buttonStyle(.pressable(scale: 0.98))
     }
-    
+
     private var measures: some View {
         Button {
             store.send(.measuresButtonTapped)

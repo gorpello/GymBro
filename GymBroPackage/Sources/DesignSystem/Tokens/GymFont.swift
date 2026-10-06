@@ -10,7 +10,7 @@ public enum GymFont {
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
         }
     }
-    
+
     static func postScriptName(_ weight: Font.Weight, italic: Bool) -> String {
         if italic {
             return weight == .semibold || weight == .bold ? "NunitoItalic-SemiBoldItalic" : "NunitoItalic-Italic"
@@ -56,7 +56,9 @@ public enum GymAppearance {
         bar.configureWithTransparentBackground()
         bar.titleTextAttributes = [.font: UIFont.gym(17), .foregroundColor: UIColor(GymColor.text)]
         bar.largeTitleTextAttributes = [.font: UIFont.gym(28), .foregroundColor: UIColor(GymColor.text)]
-        bar.subtitleTextAttributes = [.font: UIFont.gym(12.5, "Nunito-Medium"), .foregroundColor: UIColor(GymColor.textSecondary)]
+        bar.subtitleTextAttributes = [
+            .font: UIFont.gym(12.5, "Nunito-Medium"), .foregroundColor: UIColor(GymColor.textSecondary),
+        ]
         bar.largeSubtitleTextAttributes = bar.subtitleTextAttributes
         UINavigationBar.appearance().standardAppearance = bar
         UINavigationBar.appearance().scrollEdgeAppearance = bar

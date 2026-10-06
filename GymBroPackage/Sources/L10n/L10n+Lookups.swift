@@ -20,7 +20,7 @@ extension L10n {
         default: id
         }
     }
-    
+
     public static func equipment(_ id: String) -> String {
         switch id {
         case "Barbell": equipBarbell
@@ -35,7 +35,7 @@ extension L10n {
         default: equipOther
         }
     }
-    
+
     public static func difficulty(_ id: String) -> String {
         switch id {
         case "Beginner": diffBeginner
@@ -43,7 +43,7 @@ extension L10n {
         default: diffIntermediate
         }
     }
-    
+
     public static func toolName(_ id: String) -> String {
         switch id {
         case "rm": toolNameRm
@@ -54,7 +54,7 @@ extension L10n {
         default: toolNameWarmup
         }
     }
-    
+
     public static func toolDesc(_ id: String) -> String {
         switch id {
         case "rm": toolDescRm
@@ -65,7 +65,7 @@ extension L10n {
         default: toolDescWarmup
         }
     }
-    
+
     public static func activityName(_ key: String) -> String {
         switch key {
         case "Sedentary": actSedentary
@@ -74,7 +74,7 @@ extension L10n {
         default: actModerate
         }
     }
-    
+
     public static func poseName(_ pose: String) -> String {
         switch pose {
         case "front": poseFront
@@ -82,7 +82,7 @@ extension L10n {
         default: poseBack
         }
     }
-    
+
     public static func placePresetName(_ preset: String) -> String {
         switch preset {
         case "gym": placeGym
@@ -90,7 +90,7 @@ extension L10n {
         default: placeOutdoors
         }
     }
-    
+
     public static func measureName(_ key: String) -> String {
         switch key {
         case "neck": measureNeck
@@ -105,7 +105,7 @@ extension L10n {
         default: measureBodyfat
         }
     }
-    
+
     /// Journal note kinds: `note`, `plan`, `done` (a win) and `pain` (a niggle).
     public static func noteKind(_ kind: String) -> String {
         switch kind {
@@ -115,13 +115,13 @@ extension L10n {
         default: noteKindNote
         }
     }
-    
+
     /// One-letter weekday names, Monday first.
     public static var weekdayInitials: [String] {
         let symbols = Calendar.current.veryShortStandaloneWeekdaySymbols
         return Array(symbols[1...] + symbols[..<1])
     }
-    
+
     /// Short weekday names, Monday first.
     public static var weekdayShortNames: [String] {
         let symbols = Calendar.current.shortStandaloneWeekdaySymbols

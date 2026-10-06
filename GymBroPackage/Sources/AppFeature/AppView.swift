@@ -1,8 +1,8 @@
-import AboutFeature
 import AIPlanFeature
+import AboutFeature
 import AwardsFeature
-import ComposableArchitecture
 import CompareFeature
+import ComposableArchitecture
 import DesignSystem
 import ExercisesFeature
 import HomeFeature
@@ -26,22 +26,24 @@ import TrainFeature
 
 public struct AppView: View {
     @Bindable var store: StoreOf<AppFeature>
-    
+
     public init(store: StoreOf<AppFeature>) {
         self.store = store
     }
-    
+
     public var body: some View {
         tabs
             .tint(GymColor.text)
             .modifier(Modals(store: store))
     }
-    
+
     private var tabs: some View {
         TabView(selection: $store.selectedTab.sending(\.tabSelected)) {
             // SF Symbols in system chrome (HIG); the tab bar picks the filled variant for the selection.
             Tab(L10n.home.titleCased, systemImage: "house", value: AppFeature.Tab.home) { homeTab }
-            Tab(L10n.progress.titleCased, systemImage: "chart.line.uptrend.xyaxis", value: AppFeature.Tab.progress) { progressTab }
+            Tab(L10n.progress.titleCased, systemImage: "chart.line.uptrend.xyaxis", value: AppFeature.Tab.progress) {
+                progressTab
+            }
             Tab(L10n.exercises.titleCased, systemImage: "dumbbell", value: AppFeature.Tab.exercises) { exercisesTab }
             Tab(L10n.profile, systemImage: "person.crop.circle", value: AppFeature.Tab.profile) { profileTab }
         }
@@ -50,31 +52,39 @@ public struct AppView: View {
             Button(L10n.startWorkout, systemImage: "play.fill") { store.send(.startWorkoutTapped) }
         }
     }
-    
+
     private var homeTab: some View {
         NavigationStack(path: $store.scope(state: \.homePath, action: \.homePath)) {
             HomeView(store: store.scope(state: \.home, action: \.home))
-        } destination: { destination($0) }
+        } destination: {
+            destination($0)
+        }
     }
-    
+
     private var progressTab: some View {
         NavigationStack(path: $store.scope(state: \.progressPath, action: \.progressPath)) {
             ProgressOverviewView(store: store.scope(state: \.progress, action: \.progress))
-        } destination: { destination($0) }
+        } destination: {
+            destination($0)
+        }
     }
-    
+
     private var exercisesTab: some View {
         NavigationStack(path: $store.scope(state: \.exercisesPath, action: \.exercisesPath)) {
             ExerciseLibraryView(store: store.scope(state: \.exercises, action: \.exercises))
-        } destination: { destination($0) }
+        } destination: {
+            destination($0)
+        }
     }
-    
+
     private var profileTab: some View {
         NavigationStack(path: $store.scope(state: \.profilePath, action: \.profilePath)) {
             ProfileView(store: store.scope(state: \.profile, action: \.profile))
-        } destination: { destination($0) }
+        } destination: {
+            destination($0)
+        }
     }
-    
+
     @ViewBuilder
     private func destination(_ store: StoreOf<AppPath>) -> some View {
         switch store.case {
@@ -102,7 +112,7 @@ public struct AppView: View {
 /// Sheets and full-screen covers for `AppDestination`.
 private struct Modals: ViewModifier {
     @Bindable var store: StoreOf<AppFeature>
-    
+
     func body(content: Content) -> some View {
         content
             .sheet(item: $store.scope(state: \.destination?.start, action: \.destination.start)) {
@@ -123,7 +133,7 @@ private struct Modals: ViewModifier {
 
 private struct Covers: ViewModifier {
     @Bindable var store: StoreOf<AppFeature>
-    
+
     func body(content: Content) -> some View {
         content
             .fullScreenCover(item: $store.scope(state: \.destination?.train, action: \.destination.train)) {

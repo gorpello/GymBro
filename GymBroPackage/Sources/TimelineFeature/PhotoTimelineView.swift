@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct PhotoTimelineView: View {
     @Bindable var store: StoreOf<Timeline>
-    
+
     public init(store: StoreOf<Timeline>) {
         self.store = store
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -24,7 +24,7 @@ public struct PhotoTimelineView: View {
         }
         .gymScreen(L10n.timeline, subtitle: L10n.sessionsLogged(store.sessionCount))
     }
-    
+
     private var modePicker: some View {
         HStack(spacing: 0) {
             modeButton(L10n.timelinePhotos, icon: .image, mode: .photos)
@@ -35,7 +35,7 @@ public struct PhotoTimelineView: View {
         .overlay(Capsule().strokeBorder(GymColor.border))
         .animation(.snappy(duration: 0.2), value: store.mode)
     }
-    
+
     private func modeButton(_ title: String, icon: Ph, mode: Timeline.Mode) -> some View {
         let selected = store.mode == mode
         return Button {
@@ -53,7 +53,7 @@ public struct PhotoTimelineView: View {
         .buttonStyle(.plain)
         .accessibilityAddTraits(selected ? .isSelected : [])
     }
-    
+
     @ViewBuilder
     private var photos: some View {
         Text(L10n.timelineHint).font(.gym(14, .medium)).foregroundStyle(GymColor.textSecondary)
@@ -80,7 +80,9 @@ public struct PhotoTimelineView: View {
                                 .fill(GymColor.bgRaised2)
                                 .aspectRatio(3 / 4, contentMode: .fit)
                                 .overlay(alignment: .bottomLeading) {
-                                    Text(L10n.poseName(pose)).font(.gym(11, .bold)).foregroundStyle(GymColor.textSecondary).padding(8)
+                                    Text(L10n.poseName(pose)).font(.gym(11, .bold)).foregroundStyle(
+                                        GymColor.textSecondary
+                                    ).padding(8)
                                 }
                                 .accessibilityLabel(L10n.posePhoto(L10n.poseName(pose)))
                         }
@@ -92,7 +94,7 @@ public struct PhotoTimelineView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private var muscleMaps: some View {
         Text(L10n.timelineBodyHint).font(.gym(14, .medium)).foregroundStyle(GymColor.textSecondary)
@@ -108,7 +110,8 @@ public struct PhotoTimelineView: View {
                     HStack {
                         Text(window.id).font(.gym(16, .extraBold)).foregroundStyle(GymColor.text)
                         Spacer()
-                        Text(L10n.sessionCount(window.sessions)).font(.gym(13, .medium)).foregroundStyle(GymColor.textSecondary)
+                        Text(L10n.sessionCount(window.sessions)).font(.gym(13, .medium)).foregroundStyle(
+                            GymColor.textSecondary)
                     }
                     BodyMapView(levels: window.levels)
                         .padding(16)
@@ -118,7 +121,7 @@ public struct PhotoTimelineView: View {
             }
         }
     }
-    
+
     /// Dot + dashed rail on the left of each entry.
     private func rail(@ViewBuilder content: () -> some View) -> some View {
         HStack(alignment: .top, spacing: 14) {

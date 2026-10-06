@@ -5,11 +5,11 @@ import SwiftUI
 
 public struct TrainView: View {
     @Bindable var store: StoreOf<Train>
-    
+
     public init(store: StoreOf<Train>) {
         self.store = store
     }
-    
+
     public var body: some View {
         NavigationStack {
             Group {
@@ -24,8 +24,12 @@ public struct TrainView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     if store.step == .build {
-                        Button { store.send(.backButtonTapped) } label: { GymIcon(.caretLeft, weight: .bold, size: 16) }
-                            .accessibilityLabel("Back")
+                        Button {
+                            store.send(.backButtonTapped)
+                        } label: {
+                            GymIcon(.caretLeft, weight: .bold, size: 16)
+                        }
+                        .accessibilityLabel("Back")
                     } else {
                         Button(role: .close) { store.send(.closeButtonTapped) }
                     }
@@ -33,7 +37,7 @@ public struct TrainView: View {
             }
         }
     }
-    
+
     private var focus: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
@@ -74,7 +78,7 @@ public struct TrainView: View {
             .padding(20)
         }
     }
-    
+
     private func focusOption(_ title: String, hint: String, icon: Ph, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(alignment: .leading, spacing: 8) {
@@ -93,7 +97,7 @@ public struct TrainView: View {
         }
         .buttonStyle(.pressable)
     }
-    
+
     private var build: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -135,7 +139,7 @@ public struct TrainView: View {
                 .padding(.bottom, 8)
         }
     }
-    
+
     @ViewBuilder
     private func list(_ title: String, rows: [TrainExercise]) -> some View {
         if !rows.isEmpty {

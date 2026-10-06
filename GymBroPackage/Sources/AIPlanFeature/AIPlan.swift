@@ -4,14 +4,14 @@ import ComposableArchitecture
 /// The app itself never talks to an AI.
 @Reducer
 public struct AIPlan {
-    
+
     @ObservableState
     public struct State: Equatable {
         public var answer = ""
-        
+
         public init() {}
     }
-    
+
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case chooseFileButtonTapped
@@ -21,15 +21,15 @@ public struct AIPlan {
         case shareFileButtonTapped
         case showFormatButtonTapped
     }
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { _, action in
             switch action {
             case .binding, .chooseFileButtonTapped, .copyButtonTapped, .importButtonTapped, .pasteButtonTapped,
-                    .shareFileButtonTapped, .showFormatButtonTapped:
+                .shareFileButtonTapped, .showFormatButtonTapped:
                 return .none
             }
         }

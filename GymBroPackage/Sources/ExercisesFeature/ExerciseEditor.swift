@@ -12,25 +12,25 @@ public struct ExerciseEditor {
         public var name = ""
         public var primary = "chest"
         public var secondary: Set<String> = []
-        
+
         public init() {}
     }
-    
+
     public enum LogBy: String, CaseIterable, Hashable, Sendable {
         case reps, time, cardio
     }
-    
+
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case cancelButtonTapped
         case saveButtonTapped
         case secondaryMuscleTapped(String)
     }
-    
+
     @Dependency(\.dismiss) var dismiss
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         BindingReducer()
         Reduce { state, action in

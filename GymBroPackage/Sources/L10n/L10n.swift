@@ -717,7 +717,9 @@ public enum L10n {
     public static var awardHours100Name: String { tr("awardHours100Name") }
     public static var awardHours100Line: String { tr("awardHours100Line") }
     public static func awardWonOn(_ date: String) -> String { tr("awardWonOn", date) }
-    public static func awardProgressLabel(value: String, goal: String) -> String { tr("awardProgressLabel", value, goal) }
+    public static func awardProgressLabel(value: String, goal: String) -> String {
+        tr("awardProgressLabel", value, goal)
+    }
     public static func badgeName(_ id: String) -> String { tr("badgeName." + id) }
     public static func memberSince(_ date: String) -> String { tr("memberSince", date) }
     public static func levelShort(_ n: Int) -> String { tr("levelShort", n) }
@@ -913,7 +915,9 @@ public enum L10n {
     public static var multiPlanHint: String { tr("multiPlanHint") }
     public static func routineOfDay(n: Int, total: Int) -> String { tr("routineOfDay", n, total) }
     public static var planAboutMe: String { tr("planAboutMe") }
-    public static func planBody(sex: String, age: Int, height: String, weight: String) -> String { tr("planBody", sex, age, height, weight) }
+    public static func planBody(sex: String, age: Int, height: String, weight: String) -> String {
+        tr("planBody", sex, age, height, weight)
+    }
     public static func planDays(_ n: Int) -> String { tr("planDays", n) }
     public static var planNoHistory: String { tr("planNoHistory") }
     public static func planHistory(_ n: Int) -> String { tr("planHistory", n) }
@@ -964,22 +968,22 @@ public enum L10n {
     public static var goalDeadline: String { tr("goalDeadline") }
     public static var goalNoDeadline: String { tr("goalNoDeadline") }
     public static var goalRemove: String { tr("goalRemove") }
-    
+
     /// Name of a built-in exercise in the current language, falling back to `fallback`.
     public static func exerciseName(id: String, fallback: String) -> String {
         Bundle.module.localizedString(forKey: "\(id).name", value: fallback, table: "ExerciseCatalog")
     }
-    
+
     /// One how-to step of a built-in exercise in the current language.
     public static func exerciseStep(id: String, index: Int, fallback: String) -> String {
         Bundle.module.localizedString(forKey: "\(id).step.\(index)", value: fallback, table: "ExerciseCatalog")
     }
-    
+
     /// Formats `0.72` as "72%" with the current locale's spacing and symbol.
     private static func percent(_ fraction: Double) -> String {
         fraction.formatted(.percent.precision(.fractionLength(0)))
     }
-    
+
     private static func tr(_ key: String, _ args: any CVarArg...) -> String {
         let format = Bundle.module.localizedString(forKey: key, value: nil, table: nil)
         return args.isEmpty ? format : String(format: format, locale: .current, arguments: args)
