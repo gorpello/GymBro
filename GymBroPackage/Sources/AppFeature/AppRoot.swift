@@ -1,6 +1,7 @@
 import ComposableArchitecture
 import Database
 import DesignSystem
+import SQLiteData
 import SwiftUI
 
 extension AppFeature {
@@ -19,12 +20,24 @@ extension AppFeature {
 /// The app's root view; owns the root store.
 public struct AppRootView: View {
     @State private var store = Store(initialState: AppFeature.State()) { AppFeature() }
+    @FetchOne(AppSettings.find(AppSettings.singletonID).select { $0.theme })
+    private var theme: ThemePreference = AppSettings().theme
 
     public init() {}
 
     public var body: some View {
         AppView(store: store)
-            // GymMane defaults to the dark theme; Settings will drive this once it has data.
-            .preferredColorScheme(.dark)
+            .preferredColorScheme(theme.colorScheme)
+    }
+}
+
+extension ThemePreference {
+    /// `nil` lets the system decide.
+    fileprivate var colorScheme: ColorScheme? {
+        switch self {
+        case .dark: .dark
+        case .light: .light
+        default: nil
+        }
     }
 }

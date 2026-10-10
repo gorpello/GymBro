@@ -1,36 +1,15 @@
 import ComposableArchitecture
+import Database
 import Routing
+import SQLiteData
 
 /// Settings: general, training, reminders, home, data & backup, support.
 @Reducer
-public struct Preferences {
+public struct Preferences : Sendable {
     @ObservableState
     public struct State: Equatable {
-        public var alarmSoundName: String = "Default"
-        /// `loud`, `quiet` (follow silent mode) or `vibrate`.
-        public var alarmStyle: String = "quiet"
-        public var autoAdvance: Bool = true
-        public var background: String = "dots"
-        public var countdown: Bool = true
-        /// `large`, `small` or `off`.
-        public var demoSize: String = "large"
-        /// `rpe`, `rir` or `off`.
-        public var effort: String = "off"
-        public var focusCard: Bool = true
-        public var gamification: Bool = true
-        public var heatmapLabels: Bool = false
-        public var homeRecommended: Bool = true
-        public var keepScreenOn: Bool = true
-        public var languageName: String = "English"
-        public var levelHints: Bool = true
-        public var multiPlan: Bool = false
-        public var restSeconds: Int = 90
-        /// `auto`, `dark` or `light`.
-        public var theme: String = "dark"
-        public var trainReminder: String = "Never"
-        /// `kg` or `lb`.
-        public var units: String = "kg"
-        public var weekStart: String = "Monday"
+        /// Defaults until `.task` reads the saved row; every change is written straight back.
+        public var settings = AppSettings()
 
         public init() {}
     }
@@ -50,13 +29,18 @@ public struct Preferences {
         case requestFeatureButtonTapped
         case restDecrementButtonTapped
         case restIncrementButtonTapped
+        case settingsLoaded(AppSettings)
         case starButtonTapped
         case stravaButtonTapped
+        case task
 
+        @CasePathable
         public enum Delegate {
             case navigate(Route)
         }
     }
+
+    @Dependency(\.defaultDatabase) var database
 
     public init() {}
 
@@ -66,20 +50,51 @@ public struct Preferences {
             switch action {
             case .aboutButtonTapped:
                 return .send(.delegate(.navigate(.about)))
-            case .binding, .buyCoffeeButtonTapped, .delegate, .deleteAllButtonTapped, .exportBackupButtonTapped,
+            case .binding:
+                return save(state.settings)
+            case .buyCoffeeButtonTapped, .delegate, .deleteAllButtonTapped, .exportBackupButtonTapped,
                 .exportCsvButtonTapped, .importBackupButtonTapped, .importFromAppButtonTapped, .reportBugButtonTapped,
                 .requestFeatureButtonTapped, .starButtonTapped:
                 return .none
             case .placesButtonTapped:
                 return .send(.delegate(.navigate(.places)))
             case .restDecrementButtonTapped:
-                state.restSeconds = max(0, state.restSeconds - 15)
-                return .none
+                state.settings.restSeconds = max(
+                    AppSettings.restRange.lowerBound, state.settings.restSeconds - AppSettings.restStep
+                )
+                return save(state.settings)
             case .restIncrementButtonTapped:
-                state.restSeconds = min(600, state.restSeconds + 15)
+                state.settings.restSeconds = min(
+                    AppSettings.restRange.upperBound, state.settings.restSeconds + AppSettings.restStep
+                )
+                return save(state.settings)
+            case let .settingsLoaded(settings):
+                state.settings = settings
                 return .none
             case .stravaButtonTapped:
                 return .send(.delegate(.navigate(.strava)))
+            case .task:
+                return .run { send in
+                    await withErrorReporting {
+                        let settings = try await database.read { db in
+                            try AppSettings.find(AppSettings.singletonID).fetchOne(db)
+                        }
+                        if let settings {
+                            await send(.settingsLoaded(settings))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Saves the whole row; the first save inserts it.
+    private func save(_ settings: AppSettings) -> Effect<Action> {
+        .run { _ in
+            await withErrorReporting {
+                try await database.write { db in
+                    try AppSettings.upsert { AppSettings.Draft(settings) }.execute(db)
+                }
             }
         }
     }

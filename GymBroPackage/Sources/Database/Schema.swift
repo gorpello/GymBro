@@ -404,6 +404,36 @@ extension DependencyValues {
             )
             .execute(db)
         }
+        migrator.registerMigration("Create app settings") { db in
+            try #sql(
+                """
+                CREATE TABLE "appSettings" (
+                  "id" TEXT PRIMARY KEY NOT NULL ON CONFLICT REPLACE DEFAULT (uuid()),
+                  "theme" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT 'dark',
+                  "units" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT 'kg',
+                  "weekStart" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1 CHECK ("weekStart" BETWEEN 1 AND 7),
+                  "heatmapLabels" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1,
+                  "background" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT 'dots',
+                  "restSeconds" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 90,
+                  "effort" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT 'off',
+                  "autoAdvance" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1,
+                  "countdown" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1,
+                  "keepScreenOn" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1,
+                  "multiPlan" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 0,
+                  "levelHints" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1,
+                  "demoSize" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT 'large',
+                  "trainReminderMinutes" INTEGER,
+                  "alarmSound" TEXT,
+                  "alarmSoundName" TEXT,
+                  "alarmStyle" TEXT NOT NULL ON CONFLICT REPLACE DEFAULT 'quiet',
+                  "focusCard" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1,
+                  "homeRecommended" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1,
+                  "gamification" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1
+                ) STRICT
+                """
+            )
+            .execute(db)
+        }
         try migrator.migrate(database)
         try database.write { db in
             try Exercise.seedCatalog(db)
