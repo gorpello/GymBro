@@ -1,0 +1,13 @@
+#!/bin/sh
+# Runs the same swift-format check as CI on the staged Swift files, so formatting
+# errors are caught before they're pushed. Fix with:
+#   swift format format --in-place <files>
+# Enable once per clone with: git config core.hooksPath .githooks
+
+files=$(git diff --cached --name-only --diff-filter=ACMR -- '*.swift')
+[ -z "$files" ] && exit 0
+
+echo "$files" | tr '\n' '\0' | xargs -0 swift format lint --strict || {
+    echo "swift-format: fix the files above, then commit again."
+    exit 1
+}

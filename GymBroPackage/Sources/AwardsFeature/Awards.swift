@@ -11,21 +11,21 @@ public struct Awards: Sendable {
     public struct State: Equatable {
         @ObservationStateIgnored
         @Fetch public var board = AwardsBoard()
-        
+
         public init() {}
     }
-    
+
     public enum Action {
         case medalTapped(AwardKind)
         case task
     }
-    
+
     @Dependency(\.calendar) var calendar
     @Dependency(\.defaultDatabase) var database
     @Dependency(\.date.now) var now
-    
+
     public init() {}
-    
+
     public var body: some Reducer<State, Action> {
         Reduce { state, action in
             switch action {
