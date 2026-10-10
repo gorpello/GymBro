@@ -1,10 +1,12 @@
+import AwardsFeature
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
 
 public struct ProfileView: View {
-    let store: StoreOf<Profile>
+    @Bindable var store: StoreOf<Profile>
 
     public init(store: StoreOf<Profile>) {
         self.store = store
@@ -17,7 +19,9 @@ public struct ProfileView: View {
                 VStack(alignment: .leading, spacing: 24) {
                     identity
                     stats
-                    medals
+                    if summary.gamification {
+                        medals
+                    }
                     photos
                     year
                 }
@@ -28,6 +32,24 @@ public struct ProfileView: View {
         .ignoresSafeArea(edges: .top)
         .gymBackground()
         .toolbar(.hidden, for: .navigationBar)
+        .task { await store.send(.task).finish() }
+        .sheet(item: $store.scope(state: \.edit, action: \.edit)) { editStore in
+            ProfileEditView(store: editStore)
+                .presentationDetents([.large])
+        }
+    }
+
+    private var summary: ProfileSummary { store.summary }
+
+    /// The profile's name; until one is set, a prompt to fill it in.
+    private var displayName: String {
+        summary.profile.name.isEmpty ? L10n.yourProfile : summary.profile.name
+    }
+
+    /// "@handle · 78 kg", without the handle until there is one.
+    private var subtitle: String {
+        let weight = ProfileFormat.weight(kg: summary.profile.weightKg, units: summary.units)
+        return summary.profile.handle.isEmpty ? weight : "@\(summary.profile.handle) · \(weight)"
     }
 
     private var banner: some View {
@@ -74,37 +96,46 @@ public struct ProfileView: View {
     private var identity: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
-                Text(store.name)
+                Text(displayName)
                     .font(.gym(28, .extraBold, relativeTo: .largeTitle))
                     .foregroundStyle(GymColor.text)
                 GymIcon(.sealCheck, weight: .fill, size: 22)
                     .foregroundStyle(Color(argb: 0xFF3B8DF0))
             }
-            Text("@\(store.handle) · \(store.bodyweight)")
+            Text(subtitle)
                 .font(.gym(15, .medium))
                 .foregroundStyle(GymColor.textSecondary)
-            HStack(spacing: 10) {
-                Text(L10n.levelShort(store.level))
-                    .font(.gym(14, .bold))
-                    .foregroundStyle(GymColor.text)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 6)
-                    .background(GymColor.bgRaised2, in: .capsule)
-                Text(L10n.levelToNext(n: store.workoutsToNextLevel, next: store.level + 1))
-                    .font(.gym(14, .medium))
-                    .foregroundStyle(GymColor.textSecondary)
+            if summary.gamification {
+                level
             }
         }
     }
 
+    private var level: some View {
+        HStack(spacing: 10) {
+            Text(L10n.levelShort(summary.level))
+                .font(.gym(14, .bold))
+                .foregroundStyle(GymColor.text)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 6)
+                .background(GymColor.bgRaised2, in: .capsule)
+            Text(L10n.levelToNext(n: summary.workoutsToNextLevel, next: summary.level + 1))
+                .font(.gym(14, .medium))
+                .foregroundStyle(GymColor.textSecondary)
+        }
+    }
+
     private var stats: some View {
-        ScrollView(.horizontal) {
+        let totals = summary.totals
+        let trained = ProfileFormat.trained(seconds: totals.trainingSeconds)
+        let lifted = ProfileFormat.lifted(kg: totals.volumeKg, units: summary.units)
+        return ScrollView(.horizontal) {
             HStack(spacing: 28) {
-                StatBlock(L10n.statWorkouts, value: "\(store.workouts)")
-                StatBlock(L10n.statTrained, value: "\(store.trainedDays)", unit: L10n.statDays)
-                StatBlock(L10n.statSets, value: "\(store.sets)")
-                StatBlock(L10n.statLifted, value: store.lifted, unit: store.liftedUnit)
-                StatBlock(L10n.statStreak, value: "\(store.streakDays)", unit: L10n.statDays)
+                StatBlock(L10n.statWorkouts, value: "\(totals.workoutCount)")
+                StatBlock(L10n.statTrained, value: trained.value, unit: trained.unit)
+                StatBlock(L10n.statSets, value: "\(totals.setCount)")
+                StatBlock(L10n.statLifted, value: lifted.value, unit: lifted.unit)
+                StatBlock(L10n.statStreak, value: "\(totals.streak)", unit: L10n.statDays)
             }
             .padding(.horizontal, 20)
         }
@@ -122,7 +153,7 @@ public struct ProfileView: View {
                         .foregroundStyle(GymColor.textSecondary)
                 }
                 .overlay(alignment: .leading) {
-                    Text("\(store.medalCount)")
+                    Text("\(summary.medalCount)")
                         .font(.gym(20, .semibold))
                         .foregroundStyle(GymColor.textTertiary)
                         .offset(x: 96)
@@ -130,16 +161,16 @@ public struct ProfileView: View {
             }
             .buttonStyle(.plain)
             HStack(alignment: .top) {
-                ForEach(store.medals) { medal in
+                ForEach(summary.shelf) { medal in
                     VStack(spacing: 10) {
-                        MedalImage(medal.id)
+                        MedalImage(medal.kind.rawValue, locked: !medal.isEarned)
                             .frame(width: 70, height: 70)
                             .overlay(alignment: .topTrailing) {
                                 if medal.isNew {
                                     Circle().fill(GymColor.accent).frame(width: 10, height: 10)
                                 }
                             }
-                        Text(medal.name)
+                        Text(medal.kind.name)
                             .font(.gym(12, .semibold))
                             .foregroundStyle(GymColor.textSecondary)
                             .multilineTextAlignment(.center)
@@ -180,7 +211,7 @@ public struct ProfileView: View {
                         .frame(height: 100)
                         HStack(spacing: 6) {
                             Text(L10n.photosCard).foregroundStyle(GymColor.text)
-                            Text("\(store.photoCount)").foregroundStyle(GymColor.textTertiary)
+                            Text("\(summary.momentCount)").foregroundStyle(GymColor.textTertiary)
                         }
                         .font(.gym(16, .bold))
                     }
@@ -211,11 +242,12 @@ public struct ProfileView: View {
     private var year: some View {
         VStack(alignment: .leading, spacing: 14) {
             SectionHeader(L10n.yearTitle)
-            let peak = max(store.yearMonths.max() ?? 1, 1)
+            let months = summary.yearMonths
+            let peak = max(months.max() ?? 1, 1)
             let initials = Calendar.current.veryShortStandaloneMonthSymbols
             HStack(alignment: .bottom, spacing: 6) {
                 ForEach(initials.indices, id: \.self) { month in
-                    let value = month < store.yearMonths.count ? store.yearMonths[month] : 0
+                    let value = month < months.count ? months[month] : 0
                     VStack(spacing: 6) {
                         RoundedRectangle(cornerRadius: 5)
                             .fill(value > 0 ? GymColor.accent : GymColor.heatEmpty)
@@ -234,5 +266,17 @@ public struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(store: Store(initialState: Profile.State()) { Profile() })
+    ProfileView(store: previewStore())
+}
+
+/// A store backed by a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<Profile> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: Profile.State()) { Profile() }
 }

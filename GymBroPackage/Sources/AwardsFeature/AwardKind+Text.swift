@@ -1,8 +1,9 @@
 import Database
 import L10n
 
+/// Display text for medals, shared by Awards and the Profile medal shelf.
 extension AwardKind {
-    var name: String {
+    public var name: String {
         switch self {
         case .firstStep: L10n.awardFirstStepName
         case .firstWorkout: L10n.awardFirstWorkoutName
@@ -28,7 +29,7 @@ extension AwardKind {
     }
 
     /// What it takes to earn the medal.
-    var line: String {
+    public var line: String {
         switch self {
         case .firstStep: L10n.awardFirstStepLine
         case .firstWorkout: L10n.awardFirstWorkoutLine
