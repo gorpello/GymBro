@@ -5,8 +5,6 @@ import SQLiteData
 private let logger = Logger(subsystem: "com.unicorndonkeys.gymbro", category: "Database")
 
 extension DependencyValues {
-
-    // swiftlint:disable this function_body_length
     
     /// Opens the app database, runs migrations and installs it as `defaultDatabase`.
     /// Call once, from `prepareDependencies` at launch and in previews that touch the database.

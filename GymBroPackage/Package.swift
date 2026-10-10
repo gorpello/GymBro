@@ -47,6 +47,7 @@ let package = Package(
     .package(url: "https://github.com/pointfreeco/sqlite-data", from: "1.0.0"),
     .package(url: "https://github.com/pointfreeco/swift-composable-architecture", from: "1.20.0"),
     .package(url: "https://github.com/pointfreeco/swift-dependencies", from: "1.9.0"),
+    .package(url: "https://github.com/pointfreeco/swift-snapshot-testing", from: "1.18.0"),
   ],
   targets: [
     // MARK: - App
@@ -167,10 +168,12 @@ let package = Package(
     .target(
       name: "HomeFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -310,7 +313,17 @@ let package = Package(
       dependencies: [
         "Database",
         .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
-        .product(name: "SQLiteData", package: "sqlite-data"),
+      ]
+    ),
+    .testTarget(
+      name: "HomeFeatureTests",
+      dependencies: [
+        "HomeFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__",
       ]
     ),
     .testTarget(

@@ -2,7 +2,7 @@ import Foundation
 import SQLiteData
 
 @Table
-public nonisolated struct Note: Hashable, Identifiable, Sendable {
+nonisolated public struct Note: Hashable, Identifiable, Sendable {
     public let id: UUID
     /// `nil` for a general note not tied to an exercise.
     public var exerciseID: Exercise.ID?
@@ -19,7 +19,7 @@ public nonisolated struct Note: Hashable, Identifiable, Sendable {
 
 /// A photo or video attached to a note, stored in the app container.
 @Table
-public nonisolated struct NoteAttachment: Hashable, Identifiable, Sendable {
+public struct NoteAttachment: Hashable, Identifiable, Sendable {
     public let id: UUID
     public var noteID: Note.ID
     public var position = 0
@@ -28,7 +28,7 @@ public nonisolated struct NoteAttachment: Hashable, Identifiable, Sendable {
 
 /// A photo from the gym, kept on the Moments wall.
 @Table
-public nonisolated struct Moment: Hashable, Identifiable, Sendable {
+public struct Moment: Hashable, Identifiable, Sendable {
     public let id: UUID
     public var date = Date()
     public var fileName = ""
@@ -37,7 +37,7 @@ public nonisolated struct Moment: Hashable, Identifiable, Sendable {
 
 /// A day marked as trained by hand, without a logged workout.
 @Table
-public nonisolated struct CheckIn: Hashable, Identifiable, Sendable {
+public struct CheckIn: Hashable, Identifiable, Sendable {
     public let id: UUID
     /// Start of the day, in the user's calendar.
     public var day = Date()

@@ -3,7 +3,7 @@ import SQLiteData
 
 /// A medal the user has earned. The id is the award's identifier, e.g. `"firstWorkout"`.
 @Table
-public nonisolated struct Award: Hashable, Identifiable, Sendable {
+public struct Award: Hashable, Identifiable, Sendable {
     public let id: String
     public var earnedAt = Date()
     public var isSeen = false
@@ -12,7 +12,7 @@ public nonisolated struct Award: Hashable, Identifiable, Sendable {
 /// The user's profile. There's a single row, always with `UserProfile.singletonID`, so every
 /// device (and iCloud sync later) agrees on which record it is.
 @Table
-public nonisolated struct UserProfile: Hashable, Identifiable, Sendable {
+public struct UserProfile: Hashable, Identifiable, Sendable {
     public static let singletonID = UUID(uuidString: "00000000-0000-0000-0000-000000000001")!
 
     public let id: UUID
