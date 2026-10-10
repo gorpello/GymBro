@@ -2,7 +2,7 @@ import Foundation
 import SQLiteData
 
 @Table
-public nonisolated struct Routine: Hashable, Identifiable, Sendable {
+public struct Routine: Hashable, Identifiable, Sendable {
     public let id: UUID
     public var name = ""
     /// Free-text folder, e.g. "Push / Pull / Legs". Empty means ungrouped.
@@ -13,7 +13,7 @@ public nonisolated struct Routine: Hashable, Identifiable, Sendable {
 }
 
 @Table
-public nonisolated struct RoutineExercise: Hashable, Identifiable, Sendable {
+public struct RoutineExercise: Hashable, Identifiable, Sendable {
     public let id: UUID
     public var routineID: Routine.ID
     public var exerciseID: Exercise.ID
@@ -25,7 +25,7 @@ public nonisolated struct RoutineExercise: Hashable, Identifiable, Sendable {
 
 /// A set planned in a routine. Empty values are filled in from history when the workout starts.
 @Table
-public nonisolated struct PlannedSet: Hashable, Identifiable, Sendable {
+public struct PlannedSet: Hashable, Identifiable, Sendable {
     public let id: UUID
     public var routineExerciseID: RoutineExercise.ID
     public var position = 0
@@ -39,7 +39,7 @@ public nonisolated struct PlannedSet: Hashable, Identifiable, Sendable {
 
 /// One routine planned on one weekday. Several rows on the same day are allowed.
 @Table
-public nonisolated struct RoutineSchedule: Hashable, Identifiable, Sendable {
+public struct RoutineSchedule: Hashable, Identifiable, Sendable {
     public let id: UUID
     public var routineID: Routine.ID
     /// 1 = Monday … 7 = Sunday.

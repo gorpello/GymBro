@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -15,7 +16,11 @@ public struct HomeView: View {
             VStack(alignment: .leading, spacing: 16) {
                 header
                 todayCard
-                WeekStrip(initials: L10n.weekdayInitials, done: store.weekDone, today: store.todayWeekdayIndex)
+                WeekStrip(
+                    initials: L10n.weekdayInitials,
+                    done: store.summary.weekDone,
+                    today: store.summary.todayWeekdayIndex
+                )
                     .softCard(padding: 16, radius: 24)
                 recommended
                 SectionHeader(L10n.thisWeekTitle)
@@ -31,7 +36,7 @@ public struct HomeView: View {
                 }
                 .buttonStyle(.plain)
                 .padding(.top, 12)
-                HeatGrid(weeks: store.activity)
+                HeatGrid(weeks: store.summary.activity)
                     .softCard(padding: 20, radius: 24)
             }
             .padding(.horizontal, 20)
@@ -39,13 +44,14 @@ public struct HomeView: View {
         }
         .gymBackground()
         .toolbar(.hidden, for: .navigationBar)
+        .task { await store.send(.task).finish() }
     }
 
     private var header: some View {
         HStack(alignment: .bottom) {
             VStack(alignment: .leading, spacing: 4) {
                 Kicker(L10n.today)
-                Text(store.dateTitle)
+                Text(store.today?.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()) ?? " ")
                     .font(.gym(26, .extraBold, relativeTo: .largeTitle))
                     .foregroundStyle(GymColor.text)
             }
@@ -53,7 +59,7 @@ public struct HomeView: View {
             HStack(spacing: 6) {
                 GymIcon(.flame, weight: .fill, size: 14)
                     .foregroundStyle(GymColor.accent)
-                Text("\(store.streak)")
+                Text("\(store.summary.streak)")
                     .font(.gym(15, .extraBold))
                     .foregroundStyle(GymColor.text)
             }
@@ -61,7 +67,7 @@ public struct HomeView: View {
             .frame(height: 40)
             .background(GymColor.bgRaised, in: .capsule)
             .accessibilityElement(children: .combine)
-            .accessibilityLabel(L10n.streakDays(store.streak))
+            .accessibilityLabel(L10n.streakDays(store.summary.streak))
         }
         .padding(.top, 8)
     }
@@ -69,12 +75,12 @@ public struct HomeView: View {
     private var todayCard: some View {
         VStack(alignment: .leading, spacing: 0) {
             Kicker(L10n.todaysRoutine, size: 11)
-            if let name = store.todayRoutineName {
+            if let name = store.summary.todayRoutineName {
                 Text(name)
                     .font(.gym(34, .extraBold, relativeTo: .largeTitle))
                     .foregroundStyle(GymColor.text)
                     .padding(.top, 10)
-                Text(L10n.exerciseCount(store.todayExerciseCount))
+                Text(L10n.exerciseCount(store.summary.todayExerciseCount))
                     .font(.gym(15, .medium))
                     .foregroundStyle(GymColor.textSecondary)
                     .padding(.top, 4)
@@ -129,13 +135,13 @@ public struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             Kicker(L10n.recommended, size: 11)
             HStack(spacing: 12) {
-                folder(L10n.routines, detail: L10n.routineCount(store.routineCount), icon: .folders, hue: 0) {
+                folder(L10n.routines, detail: L10n.routineCount(store.summary.routineCount), icon: .folders, hue: 0) {
                     store.send(.routinesButtonTapped)
                 }
                 folder(L10n.tools, detail: L10n.calculatorsInside, icon: .calculator, hue: 4) {
                     store.send(.toolsButtonTapped)
                 }
-                folder(L10n.journal, detail: L10n.noteCount(store.noteCount), icon: .notebook, hue: 2) {
+                folder(L10n.journal, detail: L10n.noteCount(store.summary.noteCount), icon: .notebook, hue: 2) {
                     store.send(.journalButtonTapped)
                 }
             }
@@ -168,18 +174,34 @@ public struct HomeView: View {
 
     private var thisWeek: some View {
         HStack(alignment: .center) {
-            StatBlock(L10n.volume, value: store.volume, unit: store.volumeUnit)
+            StatBlock(
+                L10n.volume,
+                value: (store.summary.volumeThisWeekKg / 1000).formatted(.number.precision(.fractionLength(0...1))),
+                unit: "t"
+            )
             Spacer()
-            StatBlock(L10n.setsToday, value: "\(store.setsToday)")
+            StatBlock(L10n.setsToday, value: "\(store.summary.setsToday)")
             Spacer()
-            StatBlock(L10n.prs, value: "\(store.prCount)")
+            StatBlock(L10n.prs, value: "\(store.summary.prCount)")
             Spacer()
-            GoalRing(done: store.weeklySessions, goal: store.weeklyGoal)
+            GoalRing(done: store.summary.daysDoneThisWeek, goal: store.summary.weeklyGoal)
         }
         .softCard(padding: 24, radius: 24)
     }
 }
 
 #Preview {
-    HomeView(store: Store(initialState: Home.State()) { Home() })
+    HomeView(store: previewStore())
+}
+
+/// A store backed by a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<Home> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: Home.State()) { Home() }
 }

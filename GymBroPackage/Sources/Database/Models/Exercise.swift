@@ -4,7 +4,7 @@ import SQLiteData
 /// A built-in catalogue exercise or one the user created. Catalogue rows keep their bundled ids so
 /// they're the same on every device; custom exercises get a UUID string.
 @Table
-public nonisolated struct Exercise: Hashable, Identifiable, Sendable {
+public struct Exercise: Hashable, Identifiable, Sendable {
     public let id: String
     public var name = ""
     public var primaryMuscle: Muscle = .chest
@@ -25,7 +25,7 @@ public nonisolated struct Exercise: Hashable, Identifiable, Sendable {
 /// The user's choices for one exercise. Kept apart from `Exercise` so re-seeding the catalogue
 /// never overwrites them. A missing row means "all defaults".
 @Table
-public nonisolated struct ExercisePreference: Hashable, Identifiable, Sendable {
+public struct ExercisePreference: Hashable, Identifiable, Sendable {
     @Column(primaryKey: true)
     public let exerciseID: Exercise.ID
     public var isFavorite = false

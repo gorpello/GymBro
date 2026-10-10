@@ -5,7 +5,7 @@ import SQLiteData
 // Never change a raw value once it has shipped.
 
 /// One of the 13 muscles on the body map.
-public nonisolated struct Muscle: Codable, Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct Muscle: Codable, Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 
@@ -33,7 +33,7 @@ public nonisolated struct Muscle: Codable, Hashable, QueryBindable, RawRepresent
     public static let triceps = Self(rawValue: "triceps")
 }
 
-public nonisolated struct Equipment: Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct Equipment: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 
@@ -49,7 +49,7 @@ public nonisolated struct Equipment: Hashable, QueryBindable, RawRepresentable, 
     public static let weighted = Self(rawValue: "Weighted")
 }
 
-public nonisolated struct Difficulty: Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct Difficulty: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 
@@ -59,7 +59,7 @@ public nonisolated struct Difficulty: Hashable, QueryBindable, RawRepresentable,
 }
 
 /// How an exercise is logged: weight × reps, distance and time, or time only.
-public nonisolated struct ExerciseMode: Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct ExerciseMode: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 
@@ -68,7 +68,7 @@ public nonisolated struct ExerciseMode: Hashable, QueryBindable, RawRepresentabl
     public static let time = Self(rawValue: "time")
 }
 
-public nonisolated struct SetKind: Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct SetKind: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 
@@ -82,7 +82,7 @@ public nonisolated struct SetKind: Hashable, QueryBindable, RawRepresentable, Se
     public var counts: Bool { self != .warmup }
 }
 
-public nonisolated struct NoteKind: Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct NoteKind: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 
@@ -92,7 +92,7 @@ public nonisolated struct NoteKind: Hashable, QueryBindable, RawRepresentable, S
     public static let pain = Self(rawValue: "pain")
 }
 
-public nonisolated struct MeasurementKind: Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct MeasurementKind: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 
@@ -112,7 +112,7 @@ public nonisolated struct MeasurementKind: Hashable, QueryBindable, RawRepresent
     public static let calf = Self(rawValue: "calf")
 }
 
-public nonisolated struct Sex: Hashable, QueryBindable, RawRepresentable, Sendable {
+public struct Sex: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
 

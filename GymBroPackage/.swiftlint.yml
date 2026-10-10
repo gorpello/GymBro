@@ -8,6 +8,8 @@ included:
 
 excluded:
   - .build
+  - Sources/Database/PreviewData.swift
+  - Sources/Database/Schema.swift
   - Sources/L10n/L10n.swift   # converted from the Android ARB files; one accessor per key
 
 # MARK: - Owned by swift-format
