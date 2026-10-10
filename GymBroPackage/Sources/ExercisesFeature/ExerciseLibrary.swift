@@ -14,8 +14,6 @@ public struct ExerciseLibrary {
         public var favouriteCount: Int = 2
         public var libraryCount: Int = 551
 
-        // TODO: Remove templates elements
-        // swiftlint:disable line_length
         public var sections: [ExerciseSection] = [
             .init(
                 id: "chest",
@@ -44,7 +42,6 @@ public struct ExerciseLibrary {
                         name: "Barbell Row"),
                 ]),
         ]
-        // swiftlint:enable line_length
 
         public init() {}
     }

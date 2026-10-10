@@ -7,7 +7,7 @@ import SQLiteData
 @Table("appSettings")
 public struct AppSettings: Hashable, Identifiable, Sendable {
     public static let singletonID = UUID(uuidString: "00000000-0000-0000-0000-000000000002")!
-    
+
     public let id: UUID
     public var theme: ThemePreference = .dark
     public var units: WeightUnit = .kg
@@ -15,7 +15,7 @@ public struct AppSettings: Hashable, Identifiable, Sendable {
     public var weekStart = 1
     public var heatmapLabels = true
     public var background: BackgroundPattern = .dots
-    
+
     /// Default rest between sets, 0 (off) … 600, in steps of 15.
     public var restSeconds = 90
     public var effort: EffortScale = .off
@@ -25,14 +25,14 @@ public struct AppSettings: Hashable, Identifiable, Sendable {
     public var multiPlan = false
     public var levelHints = true
     public var demoSize: DemoSize = .large
-    
+
     /// Daily training reminder, in minutes after midnight; `nil` when off.
     public var trainReminderMinutes: Int?
     /// File name of a custom rest alarm; `nil` plays the bundled one.
     public var alarmSound: String?
     public var alarmSoundName: String?
     public var alarmStyle: AlarmStyle = .quiet
-    
+
     public var focusCard = true
     public var homeRecommended = true
     public var gamification = true
@@ -43,7 +43,7 @@ extension AppSettings {
     public init() {
         self.init(id: Self.singletonID)
     }
-    
+
     /// Rest timer bounds and step, in seconds.
     public static let restRange = 0...600
     public static let restStep = 15

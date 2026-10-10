@@ -235,6 +235,6 @@ private struct Parser {
             i = begin
             return nil
         }
-        return Double(String(decoding: s[begin..<i], as: UTF8.self))
+        return String(bytes: s[begin..<i], encoding: .ascii).flatMap(Double.init)
     }
 }

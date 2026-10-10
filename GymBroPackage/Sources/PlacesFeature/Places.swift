@@ -7,8 +7,6 @@ public struct Places {
     public struct State: Equatable {
         public var activePlaceID: String? = "basement"
 
-        // TODO: Remove templates elements
-        // swiftlint:disable line_length
         public var places: [PlaceRow] = [
             .init(
                 id: "basement", equipment: ["Barbell", "Dumbbell", "Bodyweight", "Kettlebell", "Rings"],
@@ -16,7 +14,6 @@ public struct Places {
             .init(
                 id: "hotel", equipment: ["Dumbbell", "Bodyweight"], exerciseCount: 236, name: "Hotel", plateSizes: 0),
         ]
-        // swiftlint:disable line_length
 
         public var activeName: String? { places.first { $0.id == activePlaceID }?.name }
 

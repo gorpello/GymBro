@@ -8,16 +8,16 @@ import SQLiteData
 public struct Muscle: Codable, Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public init(from decoder: any Decoder) throws {
         rawValue = try decoder.singleValueContainer().decode(String.self)
     }
-    
+
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         try container.encode(rawValue)
     }
-    
+
     public static let abdomen = Self(rawValue: "abdomen")
     public static let back = Self(rawValue: "back")
     public static let biceps = Self(rawValue: "biceps")
@@ -36,7 +36,7 @@ public struct Muscle: Codable, Hashable, QueryBindable, RawRepresentable, Sendab
 public struct Equipment: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let band = Self(rawValue: "Band")
     public static let barbell = Self(rawValue: "Barbell")
     public static let bodyweight = Self(rawValue: "Bodyweight")
@@ -52,7 +52,7 @@ public struct Equipment: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct Difficulty: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let beginner = Self(rawValue: "Beginner")
     public static let intermediate = Self(rawValue: "Intermediate")
     public static let advanced = Self(rawValue: "Advanced")
@@ -62,7 +62,7 @@ public struct Difficulty: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct ExerciseMode: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let weight = Self(rawValue: "weight")
     public static let cardio = Self(rawValue: "cardio")
     public static let time = Self(rawValue: "time")
@@ -71,13 +71,13 @@ public struct ExerciseMode: Hashable, QueryBindable, RawRepresentable, Sendable 
 public struct SetKind: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let normal = Self(rawValue: "normal")
     public static let warmup = Self(rawValue: "warmup")
     public static let drop = Self(rawValue: "drop")
     public static let failure = Self(rawValue: "failure")
     public static let restPause = Self(rawValue: "restPause")
-    
+
     /// Warm-up sets don't count toward volume, set totals or PRs.
     public var counts: Bool { self != .warmup }
 }
@@ -85,7 +85,7 @@ public struct SetKind: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct NoteKind: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let note = Self(rawValue: "note")
     public static let plan = Self(rawValue: "plan")
     public static let done = Self(rawValue: "done")
@@ -95,7 +95,7 @@ public struct NoteKind: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct MeasurementKind: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     /// Kilograms.
     public static let bodyweight = Self(rawValue: "bodyweight")
     /// Percent.
@@ -115,7 +115,7 @@ public struct MeasurementKind: Hashable, QueryBindable, RawRepresentable, Sendab
 public struct Sex: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let male = Self(rawValue: "male")
     public static let female = Self(rawValue: "female")
 }
@@ -126,7 +126,7 @@ public struct Sex: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct ThemePreference: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let system = Self(rawValue: "system")
     public static let dark = Self(rawValue: "dark")
     public static let light = Self(rawValue: "light")
@@ -136,7 +136,7 @@ public struct ThemePreference: Hashable, QueryBindable, RawRepresentable, Sendab
 public struct WeightUnit: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let kg = Self(rawValue: "kg")
     public static let lb = Self(rawValue: "lb")
 }
@@ -145,7 +145,7 @@ public struct WeightUnit: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct EffortScale: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let off = Self(rawValue: "off")
     public static let rpe = Self(rawValue: "rpe")
     public static let rir = Self(rawValue: "rir")
@@ -155,7 +155,7 @@ public struct EffortScale: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct DemoSize: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let large = Self(rawValue: "large")
     public static let small = Self(rawValue: "small")
     public static let off = Self(rawValue: "off")
@@ -165,7 +165,7 @@ public struct DemoSize: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct AlarmStyle: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let loud = Self(rawValue: "loud")
     public static let quiet = Self(rawValue: "quiet")
     public static let vibrate = Self(rawValue: "vibrate")
@@ -174,7 +174,7 @@ public struct AlarmStyle: Hashable, QueryBindable, RawRepresentable, Sendable {
 public struct BackgroundPattern: Hashable, QueryBindable, RawRepresentable, Sendable {
     public var rawValue: String
     public init(rawValue: String) { self.rawValue = rawValue }
-    
+
     public static let dots = Self(rawValue: "dots")
     public static let grid = Self(rawValue: "grid")
     /// Raw value kept from GymMane; not `.none`, which would clash with `Optional.none`.

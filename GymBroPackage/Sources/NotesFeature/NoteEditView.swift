@@ -85,7 +85,7 @@ public struct NoteEditView: View {
             }
             .padding(20)
         }
-        .gymScreen(store.id == nil ? L10n.newNote : L10n.editNote)
+        .gymScreen(store.state.id == nil ? L10n.newNote : L10n.editNote)
         .safeAreaInset(edge: .bottom) {
             Button(L10n.save.titleCased) { store.send(.saveButtonTapped) }
                 .buttonStyle(.primary)
@@ -93,7 +93,7 @@ public struct NoteEditView: View {
                 .padding(.bottom, 8)
         }
         .toolbar {
-            if store.id != nil {
+            if store.state.id != nil {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(role: .destructive) {
                         store.send(.deleteButtonTapped)

@@ -10,8 +10,6 @@ public struct ProgressOverview {
         public var muscleRange: MuscleRange = .days7
 
         /// Consistency grid, `activity[week][weekday]`, levels 0…4.
-        // TODO: Remove templates elements
-        // swiftlint:disable line_length
         public var activity: [[Int]] = [
             [0, 4, 0, 0, 0, 4, 4], [4, 0, 4, 4, 0, 0, 0], [4, 0, 4, 0, 3, 0, 4], [0, 3, 0, 4, 4, 4, 0],
             [0, 4, 4, 0, 0, 4, 0], [4, 0, 0, 4, 2, 0, 4], [0, 4, 0, 4, 0, 4, 0], [4, 4, 0, 0, 4, 0, 4],
@@ -36,7 +34,6 @@ public struct ProgressOverview {
             "chest": 4, "triceps": 4, "shoulders": 3, "quads": 4, "hamstrings": 3, "glutes": 4, "back": 4, "biceps": 3,
             "calves": 2, "abdomen": 1, "trapezius": 2, "forearm": 1,
         ]
-        // swiftlint:enable line_length
 
         /// Recovery level 0 (fresh) … 4 (fatigued) per muscle id.
         public var recoveryLevels: [String: Int] = ["chest": 4, "triceps": 3, "shoulders": 2, "quads": 1]

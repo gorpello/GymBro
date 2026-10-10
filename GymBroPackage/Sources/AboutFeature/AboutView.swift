@@ -35,11 +35,14 @@ public struct AboutView: View {
                 }
                 Kicker(L10n.madeWithLoveBy, size: 11, spacing: 2)
                 Text("gorpello").font(.gym(15, .bold)).foregroundStyle(GymColor.text)
+                // swiftlint:disable line_length
                 Text(
                     "Exercise art: Workout Guide by Bryl Lim and Everkinetic, CC BY-SA 4.0. Font: Nunito, SIL Open Font License."
                 )
                 .font(.gym(12, .medium))
                 .foregroundStyle(GymColor.textSecondary)
+                // swiftlint:enable line_length
+
                 HStack(spacing: 10) {
                     Button(L10n.sourceCode.titleCased) { store.send(.sourceCodeButtonTapped) }.buttonStyle(.ghost)
                     Button(L10n.buyCoffee) { store.send(.buyCoffeeButtonTapped) }.buttonStyle(.ghost)

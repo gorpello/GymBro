@@ -8,8 +8,6 @@ public struct Routines {
     public struct State: Equatable {
         @Presents public var templates: Templates.State?
 
-        // TODO: Remove templates elements
-        // swiftlint:disable line_length
         public var groups: [RoutineGroup] = [
             .init(
                 id: "PPL",
@@ -19,7 +17,6 @@ public struct Routines {
                     .init(id: "legs", exerciseCount: 4, hue: 5, name: "Legs"),
                 ])
         ]
-        // swiftlint:enable line_length
 
         /// Routine name planned for each weekday, Monday first; `nil` is a rest day.
         public var weeklyPlan: [String?] = ["Push", nil, "Pull", nil, "Legs", "Push", nil]
