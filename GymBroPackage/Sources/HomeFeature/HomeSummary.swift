@@ -102,7 +102,12 @@ extension HomeSummary {
                 checkInDays: checkInDays,
                 setCounts: Dictionary(uniqueKeysWithValues: totals.map { ($0.id, $0.setCount) })
             )
-            summary.streak = streak(endingOn: today, trainedDays: trainedDays, scheduledWeekdays: scheduledWeekdays)
+            summary.streak = Streak.count(
+                endingOn: today,
+                trainedDays: trainedDays,
+                scheduledWeekdays: scheduledWeekdays,
+                calendar: calendar
+            )
             summary.prCount = Dictionary(grouping: recordSets, by: \.exerciseID).values.count { sets in
                 guard let date = RecordKind.bestDate(of: sets) else { return false }
                 return date >= weekStart && date < weekEnd
@@ -214,23 +219,6 @@ extension HomeSummary {
             }
         }
 
-        /// Counts back from today (or yesterday, if today isn't trained yet). Once any routine is
-        /// scheduled, days with nothing scheduled are rest days and are skipped instead of ending it.
-        private func streak(endingOn today: Date, trainedDays: Set<Date>, scheduledWeekdays: Set<Int>) -> Int {
-            guard let first = trainedDays.min() else { return 0 }
-            var day = trainedDays.contains(today) ? today : calendar.day(byAdding: -1, to: today)
-            var streak = 0
-            while day >= first {
-                if trainedDays.contains(day) {
-                    streak += 1
-                } else if scheduledWeekdays.isEmpty || scheduledWeekdays.contains(calendar.mondayIndex(of: day) + 1) {
-                    break
-                }
-                day = calendar.day(byAdding: -1, to: day)
-            }
-            return streak
-        }
-
         private func heatLevel(_ fraction: Double) -> Int {
             switch fraction {
             case ...0: 0
@@ -303,16 +291,5 @@ nonisolated private enum RecordKind: CaseIterable {
             }
         }
         return date
-    }
-}
-
-extension Calendar {
-    /// 0 = Monday … 6 = Sunday, whatever the calendar's first weekday.
-    fileprivate func mondayIndex(of date: Date) -> Int {
-        (component(.weekday, from: date) + 5) % 7
-    }
-
-    fileprivate func day(byAdding days: Int, to date: Date) -> Date {
-        self.date(byAdding: .day, value: days, to: date) ?? date
     }
 }
