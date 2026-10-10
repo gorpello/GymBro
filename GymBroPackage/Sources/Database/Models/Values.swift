@@ -139,6 +139,12 @@ public struct WeightUnit: Hashable, QueryBindable, RawRepresentable, Sendable {
 
     public static let kg = Self(rawValue: "kg")
     public static let lb = Self(rawValue: "lb")
+
+    /// Kilograms in one of this unit.
+    public var kilograms: Double { self == .lb ? 0.45359237 : 1 }
+
+    /// `kg` expressed in this unit.
+    public func value(fromKilograms kg: Double) -> Double { kg / kilograms }
 }
 
 /// How effort is logged per set: rate of perceived exertion, reps in reserve, or not at all.

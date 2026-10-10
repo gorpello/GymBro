@@ -223,10 +223,13 @@ let package = Package(
     .target(
       name: "ProfileFeature",
       dependencies: [
+        "AwardsFeature",
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -335,6 +338,17 @@ let package = Package(
       name: "HomeFeatureTests",
       dependencies: [
         "HomeFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__",
+      ]
+    ),
+    .testTarget(
+      name: "ProfileFeatureTests",
+      dependencies: [
+        "ProfileFeature",
         .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
       ],

@@ -31,3 +31,25 @@ public struct UserProfile: Hashable, Identifiable, Sendable {
     public var badge = "blue"
     public var memberSince: Date?
 }
+
+extension UserProfile {
+    /// The defaults, for the singleton row.
+    public init() {
+        self.init(id: Self.singletonID)
+    }
+
+    public static let ageRange = 10...90
+    public static let heightRangeCm = 100.0...250
+    public static let weightRangeKg = 30.0...250
+    public static let weeklyGoalRange = 1...14
+
+    /// Activity multipliers offered in the profile: sedentary, light, moderate and active.
+    public static let activityFactors = [1.2, 1.375, 1.55, 1.725]
+
+    /// A handle keeps only letters, digits, `_` and `.`, so it can follow an `@`.
+    public static func sanitizedHandle(_ handle: String) -> String {
+        String(handle.filter(handleCharacters.contains))
+    }
+
+    private static let handleCharacters = Set("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_.")
+}
