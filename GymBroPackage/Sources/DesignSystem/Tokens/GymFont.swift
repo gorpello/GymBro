@@ -4,12 +4,19 @@ import SwiftUI
 
 /// Nunito, the only typeface GymMane uses (`AppTheme.d/f/s`).
 public enum GymFont {
-    /// Registers the bundled Nunito files with the process. Call once at launch.
+    /// Registers the bundled Nunito files with the process. Safe to call more than once (each
+    /// snapshot test suite does): only the first call registers.
     public static func register() {
+        _ = registration
+    }
+
+    /// Lazy statics run exactly once, thread-safely; CoreText logs an error on a second
+    /// registration of the same file.
+    private static let registration: Void = {
         for url in GymAssets.fontURLs {
             CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
         }
-    }
+    }()
 
     static func postScriptName(_ weight: Font.Weight, italic: Bool) -> String {
         if italic {

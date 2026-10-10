@@ -143,9 +143,11 @@ let package = Package(
     .target(
       name: "AwardsFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -311,6 +313,17 @@ let package = Package(
 
     // MARK: - Tests
 
+    .testTarget(
+      name: "AwardsFeatureTests",
+      dependencies: [
+        "AwardsFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__",
+      ]
+    ),
     .testTarget(
       name: "DatabaseTests",
       dependencies: [
