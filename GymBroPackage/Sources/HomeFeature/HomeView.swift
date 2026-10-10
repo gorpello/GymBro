@@ -21,7 +21,7 @@ public struct HomeView: View {
                     done: store.summary.weekDone,
                     today: store.summary.todayWeekdayIndex
                 )
-                    .softCard(padding: 16, radius: 24)
+                .softCard(padding: 16, radius: 24)
                 recommended
                 SectionHeader(L10n.thisWeekTitle)
                     .padding(.top, 12)

@@ -5,7 +5,7 @@ import SQLiteData
 private let logger = Logger(subsystem: "com.unicorndonkeys.gymbro", category: "Database")
 
 extension DependencyValues {
-    
+
     /// Opens the app database, runs migrations and installs it as `defaultDatabase`.
     /// Call once, from `prepareDependencies` at launch and in previews that touch the database.
     public mutating func bootstrapDatabase() throws {

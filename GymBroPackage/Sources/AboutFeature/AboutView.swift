@@ -42,7 +42,7 @@ public struct AboutView: View {
                 .font(.gym(12, .medium))
                 .foregroundStyle(GymColor.textSecondary)
                 // swiftlint:enable line_length
-                
+
                 HStack(spacing: 10) {
                     Button(L10n.sourceCode.titleCased) { store.send(.sourceCodeButtonTapped) }.buttonStyle(.ghost)
                     Button(L10n.buyCoffee) { store.send(.buyCoffeeButtonTapped) }.buttonStyle(.ghost)

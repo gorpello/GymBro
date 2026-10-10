@@ -5,7 +5,7 @@ import SQLiteData
 
 /// Settings: general, training, reminders, home, data & backup, support.
 @Reducer
-public struct Preferences : Sendable {
+public struct Preferences: Sendable {
     @ObservableState
     public struct State: Equatable {
         /// Defaults until `.task` reads the saved row; every change is written straight back.

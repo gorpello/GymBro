@@ -9,7 +9,7 @@ extension AppFeature {
     @MainActor public static func bootstrap() {
         prepareDependencies {
             // If there are an error on the database the user can't do nothing.
-            
+
             // swiftlint:disable force_try
             try! $0.bootstrapDatabase()
             // swiftlint:enable force_try

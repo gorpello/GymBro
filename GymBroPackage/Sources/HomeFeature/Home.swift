@@ -6,12 +6,12 @@ import SQLiteData
 /// Today: the routine due today, the week at a glance, this week's numbers and the activity map.
 @Reducer
 public struct Home {
-    
+
     @ObservableState
     public struct State: Equatable {
         @ObservationStateIgnored
         @Fetch public var summary = HomeSummary()
-        
+
         /// Start of the day Home was last shown for; `nil` until it appears.
         public var today: Date?
 

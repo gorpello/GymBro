@@ -5,7 +5,7 @@ import SQLiteData
 /// Everything Home shows. Read in one transaction by `HomeSummary.Request` and re-read whenever a
 /// workout, check-in, routine, note or the profile changes. Weeks start on Monday.
 nonisolated public struct HomeSummary: Equatable, Sendable {
-    
+
     public static let activityWeeks = 12
 
     /// Last twelve weeks, `activity[week][weekday]`, oldest week first, levels 0…4.
@@ -33,7 +33,7 @@ nonisolated public struct HomeSummary: Equatable, Sendable {
 }
 
 extension HomeSummary {
-    
+
     nonisolated public struct Request: FetchKeyRequest {
         public var today: Date
         public var calendar: Calendar
@@ -44,14 +44,15 @@ extension HomeSummary {
         }
 
         public func fetch(_ db: Database) throws -> HomeSummary {
-            
+
             let today = calendar.startOfDay(for: today)
             let todayIndex = calendar.mondayIndex(of: today)
             let weekStart = calendar.day(byAdding: -todayIndex, to: today)
             let weekEnd = calendar.day(byAdding: 7, to: weekStart)
             let activityStart = calendar.day(byAdding: -7 * (HomeSummary.activityWeeks - 1), to: weekStart)
 
-            let sessions = try Workout
+            let sessions =
+                try Workout
                 .where { $0.finishedAt.isNot(nil) }
                 .select { Session.Columns(id: $0.id, startedAt: $0.startedAt) }
                 .fetchAll(db)
@@ -292,7 +293,8 @@ nonisolated private enum RecordKind: CaseIterable {
         var best = 0.0
         var date: Date?
         for set in sets {
-            let score = kind == .weight
+            let score =
+                kind == .weight
                 ? WorkoutSet.estimatedOneRepMaxKg(weightKg: set.weightKg, reps: set.reps, rpe: set.rpe)
                 : kind.score(set)
             if score > best {

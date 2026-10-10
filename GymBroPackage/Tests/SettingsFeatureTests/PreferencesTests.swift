@@ -2,8 +2,8 @@ import ComposableArchitecture
 import CustomDump
 import DependenciesTestSupport
 import Foundation
-import SettingsFeature
 import SQLiteData
+import SettingsFeature
 import Testing
 
 @testable import Database
