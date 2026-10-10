@@ -114,7 +114,7 @@ public struct Sparkline: View {
                     Path { path in
                         guard let first = points.first else { return }
                         path.move(to: first)
-                        for p in points.dropFirst() { path.addLine(to: p) }
+                        for point in points.dropFirst() { path.addLine(to: point) }
                     }
                     .stroke(GymColor.textSecondary, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
                     if let last = points.last {

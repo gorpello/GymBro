@@ -69,7 +69,7 @@ struct PreferencesTests {
         }
         .finish()
         #expect(try fetchSettings() == store.state.settings)
-        #expect(try database.read { db in try AppSettings.all.fetchCount(db) } == 1)
+        await #expect(try database.read { db in try AppSettings.all.fetchCount(db) } == 1)
     }
 
     @Test func restTimerStepsByFifteenWithinBounds() async throws {

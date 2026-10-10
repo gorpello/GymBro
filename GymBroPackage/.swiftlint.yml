@@ -29,6 +29,7 @@ disabled_rules:
   - vertical_parameter_alignment
   - vertical_whitespace
   - large_tuple
+  - prefer_self_in_static_references
 
 # MARK: - Extra checks
 
@@ -48,7 +49,6 @@ opt_in_rules:
   - legacy_multiple
   - modifier_order
   - overridden_super_call
-  - prefer_self_in_static_references
   - private_swiftui_state
   - redundant_nil_coalescing
   - sorted_first_last
@@ -90,7 +90,7 @@ nesting:
 
 identifier_name:
   min_length:
-    warning: 2
+    warning: 1
   excluded: [i, x, y, id, db, to, ok]
 
 reporter: xcode

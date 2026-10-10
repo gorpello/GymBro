@@ -40,24 +40,24 @@ public enum GymColor {
     ]
 
     /// Mixes `a` towards `b`, resolving both for the current appearance.
-    public static func mix(_ a: Color, _ b: Color, _ t: CGFloat) -> Color {
-        blend(a, b, t)
+    public static func mix(_ first: Color, _ second: Color, _ value: CGFloat) -> Color {
+        blend(first, second, value)
     }
 
     static func dynamic(dark: UInt32, light: UInt32) -> Color {
         Color(uiColor: UIColor { $0.userInterfaceStyle == .light ? UIColor(argb: light) : UIColor(argb: dark) })
     }
 
-    static func blend(_ a: Color, _ b: Color, _ t: CGFloat) -> Color {
+    static func blend(_ first: Color, _ second: Color, _ value: CGFloat) -> Color {
         Color(
             uiColor: UIColor { traits in
-                let ca = UIColor(a).resolvedColor(with: traits).rgba
-                let cb = UIColor(b).resolvedColor(with: traits).rgba
+                let ca = UIColor(first).resolvedColor(with: traits).rgba
+                let cb = UIColor(second).resolvedColor(with: traits).rgba
                 return UIColor(
-                    red: ca.r + (cb.r - ca.r) * t,
-                    green: ca.g + (cb.g - ca.g) * t,
-                    blue: ca.b + (cb.b - ca.b) * t,
-                    alpha: ca.a + (cb.a - ca.a) * t
+                    red: ca.r + (cb.r - ca.r) * value,
+                    green: ca.g + (cb.g - ca.g) * value,
+                    blue: ca.b + (cb.b - ca.b) * value,
+                    alpha: ca.a + (cb.a - ca.a) * value
                 )
             })
     }
