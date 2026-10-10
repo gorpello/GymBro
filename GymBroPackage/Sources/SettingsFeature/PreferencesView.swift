@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -15,27 +16,32 @@ public struct PreferencesView: View {
             VStack(alignment: .leading, spacing: 10) {
                 section(L10n.sectionGeneral) {
                     picker(
-                        L10n.theme, icon: .moon, selection: $store.theme,
+                        L10n.theme, icon: .moon, selection: $store.settings.theme,
                         options: [
-                            ("auto", L10n.themeAuto), ("dark", L10n.darkTheme), ("light", L10n.lightTheme),
+                            (.system, L10n.themeAuto), (.dark, L10n.darkTheme), (.light, L10n.lightTheme),
                         ])
-                    OptionRow(L10n.languageLabel, icon: .translate, value: store.languageName)
+                    OptionRow(L10n.languageLabel, icon: .translate, value: languageName)
                     OptionRow(L10n.unitsLabel, icon: .scales) {
-                        SegToggle([("kg", "kg"), ("lb", "lb")], selection: $store.units, fontSize: 13)
-                            .frame(width: 110)
+                        SegToggle(
+                            [(WeightUnit.kg, "kg"), (WeightUnit.lb, "lb")], selection: $store.settings.units,
+                            fontSize: 13
+                        )
+                        .frame(width: 110)
                     }
-                    OptionRow(L10n.weekStartSetting, icon: .calendarBlank, value: store.weekStart)
-                    toggle(L10n.heatmapLabelsSetting, icon: .gridFour, isOn: $store.heatmapLabels)
                     picker(
-                        L10n.background, icon: .image, selection: $store.background,
+                        L10n.weekStartSetting, icon: .calendarBlank, selection: $store.settings.weekStart,
+                        options: [1, 6, 7].map { ($0, weekdayName($0)) })
+                    toggle(L10n.heatmapLabelsSetting, icon: .gridFour, isOn: $store.settings.heatmapLabels)
+                    picker(
+                        L10n.background, icon: .image, selection: $store.settings.background,
                         options: [
-                            ("dots", "Dots"), ("grid", "Grid"), ("none", "None"),
+                            (.dots, "Dots"), (.grid, "Grid"), (.plain, "None"),
                         ])
                 }
                 section(L10n.sectionTraining) {
                     OptionRow(L10n.restTimer, icon: .timer) {
                         StepperControl(
-                            store.restSeconds == 0 ? L10n.restOff : "\(store.restSeconds)s",
+                            store.settings.restSeconds == 0 ? L10n.restOff : "\(store.settings.restSeconds)s",
                             fontSize: 15,
                             buttonSize: 34,
                             minWidth: 56,
@@ -44,19 +50,19 @@ public struct PreferencesView: View {
                         )
                     }
                     picker(
-                        L10n.effortSetting, icon: .gauge, selection: $store.effort,
+                        L10n.effortSetting, icon: .gauge, selection: $store.settings.effort,
                         options: [
-                            ("off", L10n.restOff), ("rpe", "RPE"), ("rir", "RIR"),
+                            (.off, L10n.restOff), (.rpe, "RPE"), (.rir, "RIR"),
                         ])
-                    toggle(L10n.autoAdvance, icon: .skipForward, isOn: $store.autoAdvance)
-                    toggle(L10n.countdownSetting, icon: .timer, isOn: $store.countdown)
-                    toggle(L10n.keepScreenOn, icon: .sun, isOn: $store.keepScreenOn)
-                    toggle(L10n.multiPlanSetting, icon: .stack, isOn: $store.multiPlan)
-                    toggle(L10n.levelHintsSetting, icon: .trendUp, isOn: $store.levelHints)
+                    toggle(L10n.autoAdvance, icon: .skipForward, isOn: $store.settings.autoAdvance)
+                    toggle(L10n.countdownSetting, icon: .timer, isOn: $store.settings.countdown)
+                    toggle(L10n.keepScreenOn, icon: .sun, isOn: $store.settings.keepScreenOn)
+                    toggle(L10n.multiPlanSetting, icon: .stack, isOn: $store.settings.multiPlan)
+                    toggle(L10n.levelHintsSetting, icon: .trendUp, isOn: $store.settings.levelHints)
                     picker(
-                        L10n.demoSizeTitle, icon: .filmStrip, selection: $store.demoSize,
+                        L10n.demoSizeTitle, icon: .filmStrip, selection: $store.settings.demoSize,
                         options: [
-                            ("large", L10n.demoLarge), ("small", L10n.demoSmall), ("off", L10n.demoOff),
+                            (.large, L10n.demoLarge), (.small, L10n.demoSmall), (.off, L10n.demoOff),
                         ])
                     Button {
                         store.send(.placesButtonTapped)
@@ -66,19 +72,23 @@ public struct PreferencesView: View {
                     .buttonStyle(.plain)
                 }
                 section(L10n.sectionAlerts) {
-                    OptionRow(L10n.trainReminder, icon: .bell, value: store.trainReminder)
-                    OptionRow(L10n.alarmSound, icon: .speakerHigh, value: store.alarmSoundName)
+                    OptionRow(L10n.trainReminder, icon: .bell, value: trainReminderTime)
+                    OptionRow(
+                        L10n.alarmSound,
+                        icon: .speakerHigh,
+                        value: store.settings.alarmSoundName ?? L10n.alarmDefaultName
+                    )
                     picker(
-                        L10n.alarmStyleTitle, icon: .vibrate, selection: $store.alarmStyle,
+                        L10n.alarmStyleTitle, icon: .vibrate, selection: $store.settings.alarmStyle,
                         options: [
-                            ("loud", L10n.alarmStyleLoud), ("quiet", L10n.alarmStyleQuiet),
-                            ("vibrate", L10n.alarmStyleVibrate),
+                            (.loud, L10n.alarmStyleLoud), (.quiet, L10n.alarmStyleQuiet),
+                            (.vibrate, L10n.alarmStyleVibrate),
                         ])
                 }
                 section(L10n.sectionHome) {
-                    toggle(L10n.focusCard, icon: .target, isOn: $store.focusCard)
-                    toggle(L10n.homeRecommended, icon: .sparkle, isOn: $store.homeRecommended)
-                    toggle(L10n.gamificationSetting, icon: .medal, isOn: $store.gamification)
+                    toggle(L10n.focusCard, icon: .target, isOn: $store.settings.focusCard)
+                    toggle(L10n.homeRecommended, icon: .sparkle, isOn: $store.settings.homeRecommended)
+                    toggle(L10n.gamificationSetting, icon: .medal, isOn: $store.settings.gamification)
                 }
                 section(L10n.sectionData) {
                     action(L10n.exportCsv, icon: .fileCsv) { store.send(.exportCsvButtonTapped) }
@@ -100,6 +110,27 @@ public struct PreferencesView: View {
             .padding(.bottom, 32)
         }
         .gymScreen(L10n.settings)
+        .task { await store.send(.task).finish() }
+    }
+
+    /// The language the app is shown in, in that language's own words.
+    private var languageName: String {
+        let code = Locale.current.language.languageCode?.identifier ?? "en"
+        return Locale.current.localizedString(forLanguageCode: code)?.capitalized(with: .current) ?? code
+    }
+
+    /// The reminder time, e.g. "18:30", or "Off".
+    private var trainReminderTime: String {
+        guard let minutes = store.settings.trainReminderMinutes else { return L10n.restOff }
+        var components = DateComponents()
+        components.hour = minutes / 60
+        components.minute = minutes % 60
+        return Calendar.current.date(from: components)?.formatted(date: .omitted, time: .shortened) ?? ""
+    }
+
+    /// `weekday` counts from Monday = 1; Foundation's weekday symbols start on Sunday.
+    private func weekdayName(_ weekday: Int) -> String {
+        Calendar.current.standaloneWeekdaySymbols[weekday % 7]
     }
 
     private func section(_ title: String, @ViewBuilder rows: () -> some View) -> some View {
@@ -117,8 +148,9 @@ public struct PreferencesView: View {
         }
     }
 
-    private func picker(_ title: String, icon: Ph, selection: Binding<String>, options: [(String, String)]) -> some View
-    {
+    private func picker<Value: Hashable>(
+        _ title: String, icon: Ph, selection: Binding<Value>, options: [(Value, String)]
+    ) -> some View {
         Menu {
             Picker(title, selection: selection) {
                 ForEach(options, id: \.0) { Text($0.1).tag($0.0) }
@@ -144,6 +176,15 @@ public struct PreferencesView: View {
 
 #Preview {
     NavigationStack {
-        PreferencesView(store: Store(initialState: Preferences.State()) { Preferences() })
+        PreferencesView(store: previewStore())
     }
+}
+
+@MainActor
+private func previewStore() -> StoreOf<Preferences> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+    }
+    return Store(initialState: Preferences.State()) { Preferences() }
 }
