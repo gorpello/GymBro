@@ -15,8 +15,6 @@ public struct Session {
 
         public var elapsed: String = "00:03"
 
-        // TODO: Remove templates elements
-        // swiftlint:disable line_length
         public var exercises: [SessionExercise] = [
             .init(
                 id: "EIeI8Vf", art: "bench-press", last: "90×8 · 90×8 · 92.5×6 · 92.5×6", muscle: "chest",
@@ -50,18 +48,14 @@ public struct Session {
                     .init(id: 2, kind: .normal, reps: 12, weight: 25, done: false),
                 ]),
         ]
-        // swiftlint:enable line_length
 
         /// Rest countdown ("2:30"); `nil` when not resting.
         public var restRemaining: String? = "2:30"
         /// Rest progress from 1 (just started) to 0 (over).
         public var restProgress: Double = 0.85
 
-        // TODO: Remove templates elements
-        // swiftlint:disable line_length
         public var summary: SessionSummary? = SessionSummary(
             duration: "58 min", prCount: 2, volume: "8.4", volumeUnit: "t", vsLastTime: "+320 kg volume, one more set")
-        // swiftlint:enable line_length
 
         public var unit: String = "kg"
 

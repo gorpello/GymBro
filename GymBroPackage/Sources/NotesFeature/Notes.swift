@@ -11,8 +11,6 @@ public struct Notes {
         public var kindFilter: String?
         public var showsCalendar = false
 
-        // TODO: Remove templates elements
-        // swiftlint:disable line_length
         public var days: [NoteDay] = [
             .init(
                 id: "TODAY", subtitle: "Saturday, Sep 19, 2026",
@@ -36,7 +34,6 @@ public struct Notes {
                         title: "Right shoulder tight after pressing")
                 ]),
         ]
-        // swiftlint:enable line_length
 
         /// Note count per kind id (`note`, `plan`, `done`, `pain`).
         public var kindCounts: [String: Int] = ["note": 1, "done": 1, "pain": 1]
