@@ -5,34 +5,20 @@ import Routing
 import SQLiteData
 
 /// Quick workout builder. Step 1: tap muscles on the body map (or pick warm-up / cardio).
-/// Step 2: review the suggested exercises and start.
+/// Step 2: review the exercises that fit, with GymMane's suggested picks ticked, and start.
 @Reducer
 public struct Train: Sendable {
     @ObservableState
     public struct State: Equatable {
-        public var equipmentFilter: String?
+        public var equipmentFilter: Equipment?
+        public var focus: TrainFocus?
         public var muscleFilter: String?
-        public var picked: Set<String> = []
+        public var options = TrainOptions()
+        public var picked: Set<Exercise.ID> = []
         public var searchText = ""
+        /// Body-map ids of the muscles tapped in step 1.
         public var selectedMuscles: Set<String> = []
         public var step: Step = .focus
-
-        /// Exercises suggested for the chosen focus.
-        public var suggestions: [TrainExercise] = [
-            .init(id: "EIeI8Vf", art: "bench-press", detail: "Chest · Barbell", name: "Barbell Bench Press"),
-            .init(
-                id: "ns0SIbU", art: "incline-dumbbell-press", detail: "Chest · Dumbbell",
-                name: "Dumbbell Incline Bench Press"),
-            .init(id: "tri1", art: "rope-tricep-pushdown", detail: "Triceps · Cable", name: "Rope Triceps Pushdown"),
-            .init(id: "tri2", art: "skull-crusher", detail: "Triceps · Barbell", name: "Skull Crusher"),
-        ]
-        /// Further matches shown under "More options".
-        public var moreOptions: [TrainExercise] = [
-            .init(id: "9WTm7dq", art: "chest-dip", detail: "Chest · Bodyweight", name: "Chest Dip"),
-            .init(id: "pec", art: "pec-deck", detail: "Chest · Machine", name: "Pec Deck"),
-        ]
-        /// Equipment ids available for the chosen focus.
-        public var equipmentOptions: [String] = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight"]
 
         public init() {}
     }
@@ -48,8 +34,9 @@ public struct Train: Sendable {
         case closeButtonTapped
         case continueButtonTapped
         case delegate(Delegate)
-        case exerciseTapped(id: String)
+        case exerciseTapped(id: Exercise.ID)
         case muscleTapped(String)
+        case optionsLoaded(TrainOptions)
         case startButtonTapped
         case warmupButtonTapped
 
@@ -71,27 +58,30 @@ public struct Train: Sendable {
             switch action {
             case .backButtonTapped:
                 state.step = .focus
+                state.focus = nil
                 return .none
             case .binding, .delegate:
                 return .none
-            case .cardioButtonTapped, .warmupButtonTapped:
-                state.step = .build
-                return .none
+            case .cardioButtonTapped:
+                return choose(.cardio, &state)
             case .closeButtonTapped:
                 return .run { [dismiss] _ in await dismiss() }
             case .continueButtonTapped:
                 guard !state.selectedMuscles.isEmpty else { return .none }
-                state.step = .build
-                state.picked = Set(state.suggestions.map(\.id))
-                return .none
+                let muscles = Muscle.all.filter { state.selectedMuscles.contains($0.rawValue) }
+                return choose(.muscles(muscles), &state)
             case let .exerciseTapped(id):
                 if state.picked.remove(id) == nil { state.picked.insert(id) }
                 return .none
             case let .muscleTapped(id):
                 if state.selectedMuscles.remove(id) == nil { state.selectedMuscles.insert(id) }
                 return .none
+            case let .optionsLoaded(options):
+                state.options = options
+                state.picked = Set(options.defaultPicks)
+                return .none
             case .startButtonTapped:
-                let exerciseIDs = (state.suggestions + state.moreOptions).map(\.id).filter(state.picked.contains)
+                let exerciseIDs = state.startOrder
                 guard !exerciseIDs.isEmpty else { return .none }
                 return .run { [now] send in
                     await withErrorReporting {
@@ -101,21 +91,78 @@ public struct Train: Sendable {
                         await send(.delegate(.navigate(.session)))
                     }
                 }
+            case .warmupButtonTapped:
+                return choose(.warmup, &state)
             }
         }
     }
+
+    /// Moves on to step 2 for `focus` and reads what it offers.
+    private func choose(_ focus: TrainFocus, _ state: inout State) -> Effect<Action> {
+        state.focus = focus
+        state.step = .build
+        state.equipmentFilter = nil
+        state.muscleFilter = nil
+        state.searchText = ""
+        return .run { send in
+            await withErrorReporting {
+                let options = try await database.read { db in try TrainOptions.fetch(db, focus: focus) }
+                await send(.optionsLoaded(options))
+            }
+        }
+        .cancellable(id: CancelID.options, cancelInFlight: true)
+    }
+
+    private enum CancelID { case options }
 }
 
-public struct TrainExercise: Equatable, Identifiable, Sendable {
-    public var id: String
-    public var art: String
-    public var detail: String
-    public var name: String
+extension Train.State {
+    /// Suggested picks that pass the filters, in list order.
+    public var suggestions: [TrainExercise] {
+        let seed = Set(options.defaultPicks)
+        return focusRows.filter { seed.contains($0.id) }.filter(passesFilters)
+    }
 
-    public init(id: String, art: String, detail: String, name: String) {
-        self.id = id
-        self.art = art
-        self.detail = detail
-        self.name = name
+    /// The rest of the focus, then anything picked from search, filtered.
+    public var moreOptions: [TrainExercise] {
+        let seed = Set(options.defaultPicks)
+        return (focusRows.filter { !seed.contains($0.id) } + pickedElsewhere).filter(passesFilters)
+    }
+
+    /// Every active exercise whose name matches the search, up to 40.
+    public var searchResults: [TrainExercise] {
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return [] }
+        return Array(options.exercises.filter { $0.name.localizedStandardContains(query) }.prefix(40))
+    }
+
+    /// Equipment found among the focus exercises, in picker order.
+    public var equipmentOptions: [Equipment] {
+        let present = Set((focusRows + pickedElsewhere).map(\.equipment))
+        return Equipment.all.filter(present.contains)
+    }
+
+    /// Picked exercises in the order they're listed, filters aside.
+    var startOrder: [Exercise.ID] {
+        let seed = Set(options.defaultPicks)
+        let listed = focusRows.filter { seed.contains($0.id) } + focusRows.filter { !seed.contains($0.id) }
+        return (listed + pickedElsewhere).map(\.id).filter(picked.contains)
+    }
+
+    private var focusRows: [TrainExercise] {
+        let byID = Dictionary(options.exercises.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        return options.pool.compactMap { byID[$0] }
+    }
+
+    /// Picked exercises that aren't part of the focus, found by searching.
+    private var pickedElsewhere: [TrainExercise] {
+        let pool = Set(options.pool)
+        return options.exercises.filter { picked.contains($0.id) && !pool.contains($0.id) }
+    }
+
+    private func passesFilters(_ exercise: TrainExercise) -> Bool {
+        if let muscleFilter, exercise.primaryMuscle.rawValue != muscleFilter { return false }
+        if let equipmentFilter, exercise.equipment != equipmentFilter { return false }
+        return true
     }
 }

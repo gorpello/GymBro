@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -60,6 +61,16 @@ public struct AboutView: View {
 
 #Preview {
     NavigationStack {
-        AboutView(store: Store(initialState: About.State()) { About() })
+        AboutView(store: previewStore(About.State(), About()))
     }
+}
+
+/// A store backed by a database with the catalogue and nothing else.
+@MainActor
+private func previewStore<R: Reducer>(_ state: R.State, _ reducer: R) -> Store<R.State, R.Action> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+    }
+    return Store(initialState: state) { reducer }
 }

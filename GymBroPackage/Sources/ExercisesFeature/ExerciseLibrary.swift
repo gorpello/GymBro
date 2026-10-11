@@ -8,7 +8,7 @@ import SQLiteData
 /// grouped by muscle. Read from the database (see `ExerciseListing`) and re-read whenever the
 /// filter or an exercise changes.
 @Reducer
-public struct ExerciseLibrary : Sendable{
+public struct ExerciseLibrary: Sendable {
     @ObservableState
     public struct State: Equatable {
         @Presents public var editor: ExerciseEditor.State?

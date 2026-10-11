@@ -9,14 +9,14 @@ public struct PlanImport {
         public var usesTheirSchedule = false
 
         /// Routines found in the pasted text.
-        public var found: [ImportedRoutine] = [
-            .init(id: "a", exerciseCount: 5, name: "Upper A", weekday: "Mon"),
-            .init(id: "b", exerciseCount: 5, name: "Lower A", weekday: "Tue"),
-        ]
+        public var found: [ImportedRoutine]
         /// Exercise names that did not match the library.
-        public var missing: Int = 1
+        public var missing: Int
 
-        public init() {}
+        public init(found: [ImportedRoutine] = [], missing: Int = 0) {
+            self.found = found
+            self.missing = missing
+        }
     }
 
     public enum Action: BindableAction {

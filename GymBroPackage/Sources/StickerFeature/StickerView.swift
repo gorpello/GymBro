@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -40,6 +41,7 @@ public struct StickerView: View {
         }
         .padding(20)
         .gymScreen(L10n.stickerOpen)
+        .task { await store.send(.task).finish() }
     }
 
     private var canvas: some View {
@@ -79,27 +81,29 @@ public struct StickerView: View {
         VStack(alignment: .leading, spacing: 8) {
             switch store.style {
             case .workout:
-                Text(store.dateTitle).font(.gym(12, .bold)).foregroundStyle(.white.opacity(0.7))
+                Text(dateTitle).font(.gym(12, .bold)).foregroundStyle(.white.opacity(0.7))
                 HStack(spacing: 18) {
-                    stat(L10n.duration, store.duration)
-                    stat(L10n.volume, store.volume)
-                    stat(L10n.setsCaps, "\(store.sets)")
+                    stat(L10n.duration, UnitFormat.clock(store.summary.workout?.durationSeconds ?? 0))
+                    stat(L10n.volume, volume)
+                    stat(L10n.setsCaps, "\(store.summary.setCount)")
                 }
-                ForEach(store.exerciseNames.prefix(4), id: \.self) {
-                    Text($0).font(.gym(13, .semibold)).foregroundStyle(.white)
+                ForEach(store.summary.exercises.prefix(4)) { exercise in
+                    Text(L10n.exerciseName(id: exercise.id, fallback: exercise.name))
+                        .font(.gym(13, .semibold))
+                        .foregroundStyle(.white)
                 }
             case .streak:
                 HStack(spacing: 8) {
                     GymIcon(.flame, weight: .fill, size: 28).foregroundStyle(GymColor.accent)
-                    Text("\(store.streak)").font(.gym(44, .extraBold)).foregroundStyle(.white)
+                    Text("\(store.summary.streak)").font(.gym(44, .extraBold)).foregroundStyle(.white)
                 }
                 Text(L10n.shareStreakLabel).font(.gym(12, .extraBold)).tracking(2).foregroundStyle(.white.opacity(0.7))
             case .date:
-                Text(store.dateTitle).font(.gym(26, .extraBold)).foregroundStyle(.white)
+                Text(dateTitle).font(.gym(26, .extraBold)).foregroundStyle(.white)
             case .week:
                 HStack(spacing: 6) {
                     ForEach(Array(L10n.weekdayInitials.enumerated()), id: \.offset) { index, initial in
-                        let done = index < store.weekDone.count && store.weekDone[index]
+                        let done = index < store.summary.weekDone.count && store.summary.weekDone[index]
                         Text(initial)
                             .font(.gym(12, .bold))
                             .foregroundStyle(done ? .black : .white)
@@ -113,6 +117,17 @@ public struct StickerView: View {
         .background(.black.opacity(0.55), in: .rect(cornerRadius: 20))
     }
 
+    /// "Saturday, Sep 19".
+    private var dateTitle: String {
+        store.summary.date?.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()) ?? ""
+    }
+
+    /// "8.4 t".
+    private var volume: String {
+        let volume = UnitFormat.volume(store.summary.volumeKg, units: store.summary.units)
+        return "\(volume.value) \(volume.unit)"
+    }
+
     private func stat(_ label: String, _ value: String) -> some View {
         VStack(alignment: .leading, spacing: 2) {
             Text(label).font(.gym(10, .bold)).tracking(1).foregroundStyle(.white.opacity(0.7))
@@ -123,6 +138,18 @@ public struct StickerView: View {
 
 #Preview {
     NavigationStack {
-        StickerView(store: Store(initialState: Sticker.State()) { Sticker() })
+        StickerView(store: previewStore(Sticker.State(), Sticker()))
     }
+}
+
+/// A store backed by a database seeded with a month of training.
+@MainActor
+private func previewStore<R: Reducer>(_ state: R.State, _ reducer: R) -> Store<R.State, R.Action> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: state) { reducer }
 }

@@ -1,24 +1,16 @@
 import ComposableArchitecture
+import Database
+import Foundation
+import SQLiteData
 
 /// Pick a card to share: streak and consistency, muscles worked, or before and after.
 @Reducer
-public struct ShareCard {
-
+public struct ShareCard: Sendable {
     @ObservableState
     public struct State: Equatable {
         public var kind: Kind = .streak
-
-        public var activity: [[Int]] = [
-            [0, 4, 0, 0, 0, 4, 4], [4, 0, 4, 4, 0, 0, 0], [4, 0, 4, 0, 3, 0, 4], [0, 3, 0, 4, 4, 4, 0],
-            [0, 4, 4, 0, 0, 4, 0], [4, 0, 0, 4, 2, 0, 4], [0, 4, 0, 4, 0, 4, 0], [4, 4, 0, 0, 4, 0, 4],
-            [0, 0, 4, 3, 0, 4, 4], [4, 0, 4, 4, 4, 0, 0], [0, 4, 0, 4, 0, 4, 4], [0, 0, 0, 4, 4, 4, 4],
-        ]
-        public var muscleLevels: [String: Int] = [
-            "chest": 4, "triceps": 3, "shoulders": 2, "quads": 4, "hamstrings": 2, "glutes": 3, "back": 3, "biceps": 1,
-            "calves": 1,
-        ]
-
-        public var streak: Int = 4
+        @ObservationStateIgnored
+        @Fetch public var summary = ShareSummary()
 
         public init() {}
     }
@@ -30,44 +22,91 @@ public struct ShareCard {
     public enum Action: BindableAction {
         case binding(BindingAction<State>)
         case shareButtonTapped
+        case task
     }
+
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.date.now) var now
 
     public init() {}
 
     public var body: some Reducer<State, Action> {
         BindingReducer()
-        Reduce { _, action in
+        Reduce { state, action in
             switch action {
             case .binding, .shareButtonTapped:
                 return .none
+            case .task:
+                return .run { [summary = state.$summary, now, calendar] _ in
+                    await withErrorReporting {
+                        try await summary.load(ShareSummary.Request(today: now, calendar: calendar)).task
+                    }
+                }
             }
+        }
+    }
+}
+
+/// What the share cards show, read from the training history.
+public struct ShareSummary: Equatable, Sendable {
+    /// Twelve weeks of heat, oldest first, Monday first.
+    public var activity: [[Int]] = Array(repeating: Array(repeating: 0, count: 7), count: ActivityGrid.weeks)
+    /// Heat 1…4 per body-map muscle id over the last seven days.
+    public var muscleLevels: [String: Int] = [:]
+    public var streak = 0
+
+    public init() {}
+
+    public struct Request: FetchKeyRequest {
+        public var today: Date
+        public var calendar: Calendar
+
+        public init(today: Date, calendar: Calendar) {
+            self.today = today
+            self.calendar = calendar
+        }
+
+        public func fetch(_ db: Database) throws -> ShareSummary {
+            let today = calendar.startOfDay(for: today)
+            var summary = ShareSummary()
+            summary.activity = try ActivityGrid.fetch(db, today: today, calendar: calendar)
+            summary.streak = try Streak.fetch(db, today: today, calendar: calendar)
+            let sets = try MuscleLoad.fetchSets(db, since: calendar.day(byAdding: -6, to: today))
+            summary.muscleLevels = Dictionary(
+                uniqueKeysWithValues: MuscleLoad.heatLevels(sets, days: 7).map { ($0.key.rawValue, $0.value) }
+            )
+            return summary
         }
     }
 }
 
 /// Export one workout as a `.fit` file for Strava.
 @Reducer
-public struct StravaExport {
+public struct StravaExport: Sendable {
     @ObservableState
     public struct State: Equatable {
-        public var workouts: [StravaWorkout] = [
-            .init(id: "w1", date: "Sat, Sep 19", name: "Push", sets: 12),
-            .init(id: "w2", date: "Thu, Sep 17", name: "Legs", sets: 14),
-            .init(id: "w3", date: "Wed, Sep 16", name: "Pull", sets: 12),
-        ]
+        @ObservationStateIgnored
+        @Fetch public var workouts: [StravaWorkout] = []
 
         public init() {}
     }
 
     public enum Action {
-        case workoutTapped(id: String)
+        case task
+        case workoutTapped(id: Workout.ID)
     }
 
     public init() {}
 
     public var body: some Reducer<State, Action> {
-        Reduce { _, action in
+        Reduce { state, action in
             switch action {
+            case .task:
+                return .run { [workouts = state.$workouts] _ in
+                    await withErrorReporting {
+                        try await workouts.load(StravaWorkout.Request()).task
+                    }
+                }
             case .workoutTapped:
                 return .none
             }
@@ -75,16 +114,42 @@ public struct StravaExport {
     }
 }
 
+/// A finished workout that can be sent to Strava.
+@Selection
 public struct StravaWorkout: Equatable, Identifiable, Sendable {
-    public var id: String
-    public var date: String
-    public var name: String
-    public var sets: Int
+    public var id: Workout.ID
+    public var startedAt: Date
+    /// The routine it was started from, if any.
+    public var routineName: String?
+    public var durationSeconds: Int
+    /// Completed working sets.
+    public var setCount: Int
+}
 
-    public init(id: String, date: String, name: String, sets: Int) {
-        self.id = id
-        self.date = date
-        self.name = name
-        self.sets = sets
+extension StravaWorkout {
+    /// Finished workouts with at least one completed working set, newest first.
+    public struct Request: FetchKeyRequest {
+        public init() {}
+
+        public func fetch(_ db: Database) throws -> [StravaWorkout] {
+            try Workout
+                .where { $0.finishedAt.isNot(nil) }
+                .group(by: \.id)
+                .order { $0.startedAt.desc() }
+                .leftJoin(Routine.all) { $0.routineID.eq($1.id) }
+                .join(WorkoutExercise.all) { $0.id.eq($2.workoutID) }
+                .join(WorkoutSet.all) { $2.id.eq($3.workoutExerciseID) }
+                .where { _, _, _, workoutSets in workoutSets.isCompleted && workoutSets.kind.neq(SetKind.warmup) }
+                .select { workouts, routines, _, workoutSets in
+                    StravaWorkout.Columns(
+                        id: workouts.id,
+                        startedAt: workouts.startedAt,
+                        routineName: routines.name,
+                        durationSeconds: workouts.durationSeconds,
+                        setCount: workoutSets.id.count()
+                    )
+                }
+                .fetchAll(db)
+        }
     }
 }

@@ -1,9 +1,12 @@
 import ComposableArchitecture
 import CoreGraphics
+import Database
+import Foundation
+import SQLiteData
 
 /// Put a workout sticker on a photo: move, pinch and turn it, then save or share.
 @Reducer
-public struct Sticker {
+public struct Sticker: Sendable {
     @ObservableState
     public struct State: Equatable {
         public var offset: CGSize = .zero
@@ -11,16 +14,9 @@ public struct Sticker {
         public var scale: Double = 1
         public var style: Style = .workout
 
-        public var dateTitle: String = "Saturday, Sep 19"
-        public var duration: String = "58 min"
-        public var exerciseNames: [String] = [
-            "Barbell Bench Press", "Dumbbell Incline Bench Press", "Overhead Press", "Rope Triceps Pushdown",
-        ]
-        public var hasPhoto: Bool = false
-        public var sets: Int = 12
-        public var streak: Int = 4
-        public var volume: String = "8.4 t"
-        public var weekDone: [Bool] = [false, false, true, true, true, true, false]
+        public var hasPhoto = false
+        @ObservationStateIgnored
+        @Fetch public var summary = StickerSummary()
 
         public init() {}
     }
@@ -38,7 +34,11 @@ public struct Sticker {
         case stickerDragged(translation: CGSize)
         case stickerPinched(magnification: Double)
         case stickerRotated(degrees: Double)
+        case task
     }
+
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.date.now) var now
 
     public init() {}
 
@@ -58,7 +58,85 @@ public struct Sticker {
             case let .stickerRotated(degrees):
                 state.rotation += degrees
                 return .none
+            case .task:
+                return .run { [summary = state.$summary, now, calendar] _ in
+                    await withErrorReporting {
+                        try await summary.load(StickerSummary.Request(today: now, calendar: calendar)).task
+                    }
+                }
             }
         }
     }
+}
+
+/// What the stickers show: the latest finished workout, the streak and this week.
+public struct StickerSummary: Equatable, Sendable {
+    /// The day the stickers show: the latest workout's, or today before the first one.
+    public var date: Date?
+    /// The latest finished workout; `nil` before the first one.
+    public var workout: Workout?
+    /// Its exercises, in order.
+    public var exercises: [StickerExercise] = []
+    /// Its completed working sets and their volume.
+    public var setCount = 0
+    public var volumeKg = 0.0
+    public var units = AppSettings().units
+    public var streak = 0
+    /// Days of the current week with a finished workout, Monday first.
+    public var weekDone = Array(repeating: false, count: 7)
+
+    public init() {}
+
+    public struct Request: FetchKeyRequest {
+        public var today: Date
+        public var calendar: Calendar
+
+        public init(today: Date, calendar: Calendar) {
+            self.today = today
+            self.calendar = calendar
+        }
+
+        public func fetch(_ db: Database) throws -> StickerSummary {
+            let today = calendar.startOfDay(for: today)
+            let weekStart = calendar.day(byAdding: -calendar.mondayIndex(of: today), to: today)
+            var summary = StickerSummary()
+            summary.date = today
+            if let units = try AppSettings.find(AppSettings.singletonID).select(\.units).fetchOne(db) {
+                summary.units = units
+            }
+            summary.streak = try Streak.fetch(db, today: today, calendar: calendar)
+            let weekEnd = calendar.day(byAdding: 7, to: weekStart)
+            let thisWeek =
+                try Workout
+                .where { $0.finishedAt.isNot(nil) && $0.startedAt.gte(weekStart) && $0.startedAt.lt(weekEnd) }
+                .select(\.startedAt)
+                .fetchAll(db)
+            for startedAt in thisWeek {
+                summary.weekDone[calendar.mondayIndex(of: startedAt)] = true
+            }
+
+            let latest = try Workout.where { $0.finishedAt.isNot(nil) }.order { $0.startedAt.desc() }.fetchOne(db)
+            guard let workout = latest else { return summary }
+            summary.workout = workout
+            summary.date = workout.startedAt
+            summary.exercises =
+                try WorkoutExercise
+                .where { $0.workoutID.eq(workout.id) }
+                .order(by: \.position)
+                .join(Exercise.all) { $0.exerciseID.eq($1.id) }
+                .select { _, exercises in StickerExercise.Columns(id: exercises.id, name: exercises.name) }
+                .fetchAll(db)
+            if let total = try WorkoutTotal.fetch(db, from: workout.startedAt).first(where: { $0.id == workout.id }) {
+                summary.setCount = total.setCount
+                summary.volumeKg = total.volumeKg
+            }
+            return summary
+        }
+    }
+}
+
+@Selection
+public struct StickerExercise: Equatable, Identifiable, Sendable {
+    public var id: Exercise.ID
+    public var name: String
 }
