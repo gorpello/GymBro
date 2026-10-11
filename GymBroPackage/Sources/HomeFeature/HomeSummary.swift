@@ -58,7 +58,7 @@ extension HomeSummary {
                 .fetchAll(db)
             let checkIns = try CheckIn.select(\.day).fetchAll(db)
             let scheduledWeekdays = try Set(RoutineSchedule.select(\.weekday).fetchAll(db))
-            let totals = try fetchWorkoutTotals(db, since: activityStart)
+            let totals = try WorkoutTotal.fetch(db, from: activityStart)
             let todayRoutines = try fetchRoutines(db, onWeekday: todayIndex + 1)
             let recordSets = try PersonalRecord.fetchSets(
                 db,
@@ -118,27 +118,6 @@ extension HomeSummary {
             return summary
         }
 
-        /// Working sets and volume of each finished workout since `start`. Workouts without a
-        /// working set are left out.
-        private func fetchWorkoutTotals(_ db: Database, since start: Date) throws -> [WorkoutTotals] {
-            try Workout
-                .where { $0.finishedAt.isNot(nil) && $0.startedAt.gte(start) }
-                .group(by: \.id)
-                .join(WorkoutExercise.all) { $0.id.eq($1.workoutID) }
-                .join(WorkoutSet.all) { $1.id.eq($2.workoutExerciseID) }
-                .where { _, _, workoutSets in
-                    workoutSets.isCompleted && workoutSets.kind.neq(SetKind.warmup)
-                }
-                .select { workouts, _, workoutSets in
-                    WorkoutTotals.Columns(
-                        id: workouts.id,
-                        setCount: workoutSets.id.count(),
-                        volumeKg: (workoutSets.reps.cast(as: Double.self) * workoutSets.weightKg).total()
-                    )
-                }
-                .fetchAll(db)
-        }
-
         /// Routines scheduled on `weekday` (1 = Monday), in list order, with their exercise counts.
         private func fetchRoutines(_ db: Database, onWeekday weekday: Int) throws -> [TodayRoutine] {
             try RoutineSchedule
@@ -174,13 +153,6 @@ extension HomeSummary {
 nonisolated private struct Session {
     let id: Workout.ID
     let startedAt: Date
-}
-
-@Selection
-nonisolated private struct WorkoutTotals {
-    let id: Workout.ID
-    let setCount: Int
-    let volumeKg: Double
 }
 
 @Selection
