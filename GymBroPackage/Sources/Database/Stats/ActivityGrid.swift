@@ -1,4 +1,5 @@
 import Foundation
+import SQLiteData
 
 /// The consistency heat map shared by Home and Progress: twelve weeks of days, Monday first,
 /// each scored 0…4 against the busiest day.
@@ -38,6 +39,34 @@ public enum ActivityGrid {
                 return HeatLevel.of(value / busiest)
             }
         }
+    }
+}
+
+extension ActivityGrid {
+    /// The twelve weeks up to the one containing `today`, read from finished workouts and
+    /// check-ins.
+    public static func fetch(_ db: Database, today: Date, calendar: Calendar) throws -> [[Int]] {
+        let today = calendar.startOfDay(for: today)
+        let weekStart = calendar.day(byAdding: -calendar.mondayIndex(of: today), to: today)
+        let start = calendar.day(byAdding: -7 * (weeks - 1), to: weekStart)
+        let workouts =
+            try Workout
+            .where { $0.finishedAt.isNot(nil) && $0.startedAt.gte(start) }
+            .select { ($0.id, $0.startedAt) }
+            .fetchAll(db)
+        let checkInDays = try CheckIn.where { $0.day.gte(start) }.select(\.day).fetchAll(db)
+        let totals = try WorkoutTotal.fetch(db, from: start)
+        return levels(
+            from: start,
+            through: today,
+            sessionDays: Dictionary(
+                workouts.map { ($0.0, calendar.startOfDay(for: $0.1)) },
+                uniquingKeysWith: { first, _ in first }
+            ),
+            checkInDays: Set(checkInDays.map { calendar.startOfDay(for: $0) }),
+            setCounts: Dictionary(totals.map { ($0.id, $0.setCount) }, uniquingKeysWith: { first, _ in first }),
+            calendar: calendar
+        )
     }
 }
 

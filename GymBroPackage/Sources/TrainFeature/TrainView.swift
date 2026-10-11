@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -114,20 +115,27 @@ public struct TrainView: View {
                             Pill(L10n.muscle(id), selected: store.muscleFilter == id) { store.muscleFilter = id }
                         }
                         Rectangle().fill(GymColor.border).frame(width: 1, height: 24)
-                        ForEach(store.equipmentOptions, id: \.self) { id in
-                            Pill(L10n.equipment(id), selected: store.equipmentFilter == id) {
-                                store.equipmentFilter = store.equipmentFilter == id ? nil : id
+                        ForEach(store.equipmentOptions, id: \.self) { equipment in
+                            Pill(L10n.equipment(equipment.rawValue), selected: store.equipmentFilter == equipment) {
+                                store.equipmentFilter = store.equipmentFilter == equipment ? nil : equipment
                             }
                         }
                     }
                 }
                 .scrollIndicators(.hidden)
-                Text(L10n.pickedHint(store.suggestions.count))
-                    .font(.gym(13, .medium))
-                    .foregroundStyle(GymColor.textSecondary)
-                list(L10n.suggestedPicks, rows: store.suggestions)
-                list(L10n.moreOptions, rows: store.moreOptions)
                 SearchField(L10n.searchAllExercises, text: $store.searchText)
+                if !store.searchText.trimmingCharacters(in: .whitespaces).isEmpty {
+                    list(L10n.results, rows: store.searchResults)
+                    if store.searchResults.isEmpty { noExercises }
+                } else if store.suggestions.isEmpty, store.moreOptions.isEmpty {
+                    noExercises
+                } else {
+                    Text(L10n.pickedHint(store.suggestions.count + store.moreOptions.count))
+                        .font(.gym(13, .medium))
+                        .foregroundStyle(GymColor.textSecondary)
+                    list(L10n.suggestedPicks, rows: store.suggestions)
+                    list(L10n.moreOptions, rows: store.moreOptions)
+                }
             }
             .padding(20)
         }
@@ -138,6 +146,14 @@ public struct TrainView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 8)
         }
+    }
+
+    private var noExercises: some View {
+        Text(L10n.noExercisesFound)
+            .font(.gym(14, .semibold))
+            .foregroundStyle(GymColor.textSecondary)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 28)
     }
 
     @ViewBuilder
@@ -156,7 +172,7 @@ public struct TrainView: View {
                                 .frame(width: 54, height: 54)
                                 .background(GymColor.bgRaised2, in: .rect(cornerRadius: 14))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(row.name)
+                                Text(L10n.exerciseName(id: row.id, fallback: row.name))
                                     .font(.gym(15, .bold))
                                     .foregroundStyle(GymColor.text)
                                 Text(row.detail)
@@ -184,6 +200,25 @@ public struct TrainView: View {
     }
 }
 
+extension TrainExercise {
+    /// "Chest · Barbell".
+    fileprivate var detail: String {
+        "\(L10n.muscle(primaryMuscle.rawValue)) · \(L10n.equipment(equipment.rawValue))"
+    }
+}
+
 #Preview {
-    TrainView(store: Store(initialState: Train.State()) { Train() })
+    TrainView(store: previewStore())
+}
+
+/// A store backed by a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<Train> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: Train.State()) { Train() }
 }

@@ -1,8 +1,13 @@
 import ComposableArchitecture
+import Database
+import Foundation
+import L10n
+import SQLiteData
 
-/// First run: welcome, name, body numbers, weekly goal, units and places.
+/// First run: welcome, name, body numbers, weekly goal, units and places. Finishing, or skipping
+/// at any point, saves the answers so far and sets up the chosen places.
 @Reducer
-public struct Onboarding {
+public struct Onboarding: Sendable {
     @ObservableState
     public struct State: Equatable {
         public var age = 28
@@ -30,7 +35,10 @@ public struct Onboarding {
         case skipButtonTapped
     }
 
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.defaultDatabase) var database
     @Dependency(\.dismiss) var dismiss
+    @Dependency(\.date.now) var now
 
     public init() {}
 
@@ -45,7 +53,7 @@ public struct Onboarding {
                 return .none
             case .nextButtonTapped:
                 guard let next = Step(rawValue: state.step.rawValue + 1) else {
-                    return .run { [dismiss] _ in await dismiss() }
+                    return finish(state)
                 }
                 state.step = next
                 return .none
@@ -53,8 +61,34 @@ public struct Onboarding {
                 if state.places.remove(id) == nil { state.places.insert(id) }
                 return .none
             case .skipButtonTapped:
-                return .run { [dismiss] _ in await dismiss() }
+                return finish(state)
             }
+        }
+    }
+
+    /// Saves the answers and the chosen places, then closes.
+    private func finish(_ state: State) -> Effect<Action> {
+        var profile = UserProfile()
+        profile.name = state.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        profile.sex = Sex(rawValue: state.sex)
+        profile.age = state.age
+        profile.heightCm = state.heightCm
+        profile.weightKg = state.weightKg
+        profile.weeklyGoal = state.weeklyGoal
+        let units = WeightUnit(rawValue: state.units)
+        let places = Place.Preset.all
+            .filter { state.places.contains($0.id) }
+            .map { (name: L10n.placePresetName($0.id), equipment: $0.equipment) }
+        return .run { [now, calendar, dismiss] _ in
+            await withErrorReporting {
+                try await database.write { db in
+                    for place in places {
+                        try Place.create(db, name: place.name, equipment: place.equipment)
+                    }
+                    try UserProfile.completeOnboarding(db, profile: profile, units: units, now: now, calendar: calendar)
+                }
+            }
+            await dismiss()
         }
     }
 }

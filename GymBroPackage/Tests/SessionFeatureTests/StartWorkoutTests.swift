@@ -53,11 +53,8 @@ extension SessionFeatureSuite {
 
         @Test func trainStartsWithThePickedExercisesInListOrder() async throws {
             var state = Train.State()
-            state.suggestions = [
-                TrainExercise(id: bench, art: "", detail: "", name: "Bench"),
-                TrainExercise(id: press, art: "", detail: "", name: "Press"),
-            ]
-            state.moreOptions = []
+            state.options = try await database.read { db in try TrainOptions.fetch(db, focus: .muscles([.chest])) }
+            // The press isn't a chest exercise, so it was picked from search and goes after the focus.
             state.picked = [press, bench]
             let store = TestStore(initialState: state) { Train() }
 

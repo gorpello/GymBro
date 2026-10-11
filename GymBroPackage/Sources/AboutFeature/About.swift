@@ -1,14 +1,17 @@
 import ComposableArchitecture
+import Database
 import Foundation
+import SQLiteData
 
 /// About: what the app promises, what's inside, version, credits and source.
 @Reducer
-public struct About {
-
+public struct About: Sendable {
     @ObservableState
     public struct State: Equatable {
-        public var exerciseCount: Int = 448
-        public var version: String = "1.0"
+        /// Exercises in the built-in catalogue.
+        @ObservationStateIgnored
+        @FetchOne(Exercise.where { !$0.isCustom }.count()) public var exerciseCount = 0
+        public var version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
 
         public init() {}
     }
