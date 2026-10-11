@@ -9,7 +9,7 @@ import SQLiteData
 /// similar moves and per-exercise settings. Read from the database (see `ExerciseOverview`);
 /// every setting is saved as soon as it changes.
 @Reducer
-public struct ExerciseDetail : Sendable{
+public struct ExerciseDetail: Sendable {
     @ObservableState
     public struct State: Equatable {
         @Presents public var alert: AlertState<Action.Alert>?

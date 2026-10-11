@@ -1,3 +1,5 @@
+import Foundation
+
 /// Every place a feature can ask the app to go. Features send `.delegate(.navigate(route))`;
 /// `AppFeature` decides whether the route is pushed onto the current tab or presented.
 public enum Route: Equatable, Sendable {
@@ -13,7 +15,8 @@ public enum Route: Equatable, Sendable {
     case noteEdit(id: String?)
     case notes
     case places
-    case routineEdit(id: String?)
+    /// `nil` creates a new routine.
+    case routineEdit(id: UUID?)
     case routines
     case settings
     case sticker

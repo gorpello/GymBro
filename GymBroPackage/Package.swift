@@ -127,9 +127,11 @@ let package = Package(
     .target(
       name: "AboutFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -153,10 +155,12 @@ let package = Package(
     .target(
       name: "CompareFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -209,9 +213,11 @@ let package = Package(
     .target(
       name: "OnboardingFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -248,10 +254,12 @@ let package = Package(
     .target(
       name: "RoutinesFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -279,17 +287,21 @@ let package = Package(
     .target(
       name: "ShareFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
       name: "StickerFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -336,6 +348,13 @@ let package = Package(
       ]
     ),
     .testTarget(
+      name: "CompareFeatureTests",
+      dependencies: [
+        "CompareFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+      ]
+    ),
+    .testTarget(
       name: "DatabaseTests",
       dependencies: [
         "Database",
@@ -365,6 +384,13 @@ let package = Package(
       ]
     ),
     .testTarget(
+      name: "OnboardingFeatureTests",
+      dependencies: [
+        "OnboardingFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+      ]
+    ),
+    .testTarget(
       name: "ProfileFeatureTests",
       dependencies: [
         "ProfileFeature",
@@ -373,6 +399,42 @@ let package = Package(
       ],
       exclude: [
         "__Snapshots__"
+      ]
+    ),
+    .testTarget(
+      name: "ProgressFeatureTests",
+      dependencies: [
+        "ProgressFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__"
+      ]
+    ),
+    .testTarget(
+      name: "RoutinesFeatureTests",
+      dependencies: [
+        "RoutinesFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__"
+      ]
+    ),
+    .testTarget(
+      name: "ShareFeatureTests",
+      dependencies: [
+        "ShareFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+      ]
+    ),
+    .testTarget(
+      name: "StickerFeatureTests",
+      dependencies: [
+        "StickerFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
       ]
     ),
     .testTarget(

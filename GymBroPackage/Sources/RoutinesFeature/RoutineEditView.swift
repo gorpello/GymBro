@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -13,16 +14,16 @@ public struct RoutineEditView: View {
     public var body: some View {
         List {
             Section {
-                TextField(L10n.routineName, text: $store.name)
+                TextField(L10n.routineName, text: $store.draft.name)
                     .font(.gym(20, .bold))
                     .listRowBackground(GymColor.bgRaised)
             }
             Section {
                 HStack {
                     ForEach(Array(L10n.weekdayInitials.enumerated()), id: \.offset) { index, initial in
-                        let on = store.weekdays.contains(index)
+                        let on = store.draft.weekdays.contains(index + 1)
                         Button {
-                            store.send(.weekdayTapped(index))
+                            store.send(.weekdayTapped(index + 1))
                         } label: {
                             Text(initial)
                                 .font(.gym(13, .bold))
@@ -39,7 +40,7 @@ public struct RoutineEditView: View {
                 HStack {
                     Text(L10n.routineGroup).font(.gym(15, .medium))
                     Spacer()
-                    TextField(L10n.noGroup, text: $store.group)
+                    TextField(L10n.noGroup, text: $store.draft.group)
                         .multilineTextAlignment(.trailing)
                         .font(.gym(15, .medium))
                         .foregroundStyle(GymColor.textSecondary)
@@ -49,11 +50,11 @@ public struct RoutineEditView: View {
                 Kicker(L10n.schedule, size: 11, spacing: 2)
             }
             Section {
-                if store.exercises.isEmpty {
+                if store.draft.exercises.isEmpty {
                     Text(L10n.addFromList).font(.gym(14, .medium)).foregroundStyle(GymColor.textSecondary)
                         .listRowBackground(GymColor.bgRaised)
                 }
-                ForEach(store.exercises) { row in
+                ForEach(store.draft.exercises) { row in
                     exerciseRow(row)
                         .listRowBackground(GymColor.bgRaised)
                         .swipeActions {
@@ -64,7 +65,7 @@ public struct RoutineEditView: View {
                 }
                 .onMove { store.send(.moveExercises(from: $0, to: $1)) }
             } header: {
-                Kicker(L10n.exercisesWithCount(store.exercises.count), size: 11, spacing: 2)
+                Kicker(L10n.exercisesWithCount(store.draft.exercises.count), size: 11, spacing: 2)
             } footer: {
                 Text(L10n.setsPlannedHint).font(.gym(12, .medium)).foregroundStyle(GymColor.textSecondary)
             }
@@ -72,7 +73,7 @@ public struct RoutineEditView: View {
                 SearchField(L10n.searchExercises, text: $store.searchText)
                     .listRowBackground(Color.clear)
                     .listRowInsets(EdgeInsets())
-                ForEach(store.library) { row in
+                ForEach(store.addable) { row in
                     Button {
                         store.send(.addExerciseTapped(id: row.id))
                     } label: {
@@ -81,7 +82,8 @@ public struct RoutineEditView: View {
                                 .frame(width: 48, height: 48)
                                 .background(GymColor.bgRaised2, in: .rect(cornerRadius: 12))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(row.name).font(.gym(15, .bold)).foregroundStyle(GymColor.text)
+                                Text(L10n.exerciseName(id: row.id, fallback: row.name)).font(.gym(15, .bold))
+                                    .foregroundStyle(GymColor.text)
                                 Text(row.detail).font(.gym(12.5, .medium)).foregroundStyle(GymColor.textSecondary)
                             }
                             Spacer()
@@ -96,40 +98,45 @@ public struct RoutineEditView: View {
         }
         .listStyle(.insetGrouped)
         .environment(\.editMode, .constant(.active))
-        .gymScreen(store.name.isEmpty ? L10n.newRoutine : store.name)
+        .gymScreen(store.draft.name.isEmpty ? L10n.newRoutine : store.draft.name)
         .safeAreaInset(edge: .bottom) {
             HStack(spacing: 10) {
                 Button(L10n.save.titleCased) { store.send(.saveButtonTapped) }
                     .buttonStyle(.primary(fill: GymColor.bgRaised2, foreground: GymColor.text))
                 Button(L10n.startWorkout.titleCased) { store.send(.startButtonTapped) }
                     .buttonStyle(.primary)
+                    .disabled(store.draft.exercises.isEmpty)
             }
             .padding(.horizontal, 20)
             .padding(.bottom, 8)
         }
+        .disabled(store.isLoading)
+        .task { await store.send(.task).finish() }
     }
 
-    private func exerciseRow(_ row: RoutineExerciseRow) -> some View {
+    private func exerciseRow(_ row: RoutineDraft.Item) -> some View {
         HStack(spacing: 12) {
             ExerciseArtView(art: row.art)
                 .frame(width: 44, height: 44)
                 .background(GymColor.bgRaised2, in: .rect(cornerRadius: 12))
             VStack(alignment: .leading, spacing: 4) {
-                Text(row.name).font(.gym(15, .bold)).foregroundStyle(GymColor.text).lineLimit(1)
+                Text(L10n.exerciseName(id: row.id, fallback: row.name)).font(.gym(15, .bold)).foregroundStyle(
+                    GymColor.text
+                ).lineLimit(1)
                 Button {
                     store.send(.supersetToggled(id: row.id))
                 } label: {
                     HStack(spacing: 4) {
                         GymIcon(.link, size: 12)
-                        Text(row.chained ? L10n.superset : L10n.supersetLink)
+                        Text(row.isChainedToNext ? L10n.superset : L10n.supersetLink)
                     }
                     .font(.gym(12, .semibold))
-                    .foregroundStyle(row.chained ? GymColor.accent : GymColor.textTertiary)
+                    .foregroundStyle(row.isChainedToNext ? GymColor.accent : GymColor.textTertiary)
                 }
                 .buttonStyle(.plain)
             }
             Spacer()
-            StepperControl("\(row.sets)", fontSize: 14, buttonSize: 26, minWidth: 22) {
+            StepperControl("\(row.setCount)", fontSize: 14, buttonSize: 26, minWidth: 22) {
                 store.send(.setsChanged(id: row.id, delta: -1))
             } onIncrement: {
                 store.send(.setsChanged(id: row.id, delta: 1))
@@ -138,8 +145,27 @@ public struct RoutineEditView: View {
     }
 }
 
+extension RoutineLibraryRow {
+    /// "Chest · Machine".
+    fileprivate var detail: String {
+        "\(L10n.muscle(primaryMuscle.rawValue)) · \(L10n.equipment(equipment.rawValue))"
+    }
+}
+
 #Preview {
     NavigationStack {
-        RoutineEditView(store: Store(initialState: RoutineEdit.State(id: nil)) { RoutineEdit() })
+        RoutineEditView(store: previewStore())
     }
+}
+
+/// Editing "Push" from a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<RoutineEdit> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: RoutineEdit.State(id: UUID(1))) { RoutineEdit() }
 }

@@ -62,5 +62,17 @@ public struct PlanImportView: View {
 }
 
 #Preview {
-    PlanImportView(store: Store(initialState: PlanImport.State()) { PlanImport() })
+    PlanImportView(
+        store: Store(
+            initialState: PlanImport.State(
+                found: [
+                    ImportedRoutine(id: "a", exerciseCount: 5, name: "Upper A", weekday: "Mon"),
+                    ImportedRoutine(id: "b", exerciseCount: 5, name: "Lower A", weekday: "Tue"),
+                ],
+                missing: 1
+            )
+        ) {
+            PlanImport()
+        }
+    )
 }

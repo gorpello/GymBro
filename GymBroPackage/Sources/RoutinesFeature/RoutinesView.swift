@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -17,12 +18,12 @@ public struct RoutinesView: View {
                 weeklyPlan
                 Kicker(L10n.yourRoutines, size: 12, spacing: 2)
                     .padding(.top, 10)
-                if store.groups.isEmpty {
+                if store.listing.groups.isEmpty {
                     Text(L10n.noRoutines)
                         .font(.gym(14, .medium))
                         .foregroundStyle(GymColor.textSecondary)
                 }
-                ForEach(store.groups) { group in
+                ForEach(store.listing.groups) { group in
                     if !group.id.isEmpty {
                         HStack(spacing: 8) {
                             GymIcon(.folder, size: 18).foregroundStyle(GymColor.accent)
@@ -42,6 +43,8 @@ public struct RoutinesView: View {
                                 store.send(.startButtonTapped(id: routine.id))
                             } onDuplicate: {
                                 store.send(.duplicateButtonTapped(id: routine.id))
+                            } onDelete: {
+                                store.send(.deleteButtonTapped(id: routine.id))
                             }
                         }
                     }
@@ -81,12 +84,21 @@ public struct RoutinesView: View {
         .sheet(item: $store.scope(state: \.templates, action: \.templates)) { templatesStore in
             TemplatesView(store: templatesStore)
         }
+        .alert($store.scope(state: \.alert, action: \.alert))
+        .task { await store.send(.task).finish() }
+    }
+
+    /// What's planned on weekday `index` (0 = Monday), e.g. "Push and Pull"; `nil` on a rest day.
+    private func plannedNames(on index: Int) -> String? {
+        let names = index < store.listing.weeklyPlan.count ? store.listing.weeklyPlan[index] : []
+        guard !names.isEmpty else { return nil }
+        return names.map { $0.isEmpty ? L10n.newRoutineName : $0 }.formatted(.list(type: .and))
     }
 
     private var weeklyPlan: some View {
         VStack(spacing: 0) {
             ForEach(Array(L10n.weekdayShortNames.enumerated()), id: \.offset) { index, day in
-                let routine = index < store.weeklyPlan.count ? store.weeklyPlan[index] : nil
+                let routine = plannedNames(on: index)
                 Button {
                     store.send(.weekdayTapped(index))
                 } label: {
@@ -117,6 +129,7 @@ struct RoutineFolderCard: View {
     let onOpen: () -> Void
     let onStart: () -> Void
     let onDuplicate: () -> Void
+    let onDelete: () -> Void
 
     @Environment(\.colorScheme) private var colorScheme
 
@@ -159,13 +172,14 @@ struct RoutineFolderCard: View {
                     VStack(alignment: .leading, spacing: 0) {
                         HStack(alignment: .top) {
                             HStack(spacing: 4) {
-                                Text(routine.name).font(.gym(18, .extraBold)).foregroundStyle(GymColor.text).lineLimit(
+                                Text(routine.title).font(.gym(18, .extraBold)).foregroundStyle(GymColor.text).lineLimit(
                                     1)
                                 GymIcon(.caretRight, weight: .bold, size: 12).foregroundStyle(GymColor.textSecondary)
                             }
                             Spacer()
                             Menu {
                                 Button(L10n.duplicateRoutine, action: onDuplicate)
+                                Button(L10n.delete, role: .destructive, action: onDelete)
                             } label: {
                                 GymIcon(.dotsThreeVertical, weight: .bold, size: 16)
                                     .foregroundStyle(GymColor.text)
@@ -248,6 +262,18 @@ struct TemplatesView: View {
 
 #Preview {
     NavigationStack {
-        RoutinesView(store: Store(initialState: Routines.State()) { Routines() })
+        RoutinesView(store: previewStore())
     }
+}
+
+/// A store backed by a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<Routines> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: Routines.State()) { Routines() }
 }

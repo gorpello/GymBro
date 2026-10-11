@@ -5,7 +5,7 @@ import SQLiteData
 
 /// Create or edit a custom exercise: name, muscles, equipment, level, how it's logged, steps.
 @Reducer
-public struct ExerciseEditor : Sendable{
+public struct ExerciseEditor: Sendable {
     @ObservableState
     public struct State: Equatable {
         /// `nil` while creating a new exercise.

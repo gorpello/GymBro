@@ -1,46 +1,52 @@
 import ComposableArchitecture
+import Database
+import L10n
 import Routing
+import SQLiteData
 
-/// Weekly plan plus every routine, grouped into folders, with templates and AI import.
+/// Weekly plan plus every routine, grouped into folders, with templates and AI import. Read from
+/// the database (see `RoutineListing`) and kept up to date as routines change.
 @Reducer
-public struct Routines {
+public struct Routines: Sendable {
     @ObservableState
     public struct State: Equatable {
+        @Presents public var alert: AlertState<Action.Alert>?
+        @ObservationStateIgnored
+        @Fetch public var listing = RoutineListing()
         @Presents public var templates: Templates.State?
-
-        public var groups: [RoutineGroup] = [
-            .init(
-                id: "PPL",
-                routines: [
-                    .init(id: "push", exerciseCount: 4, hue: 3, name: "Push"),
-                    .init(id: "pull", exerciseCount: 4, hue: 2, name: "Pull"),
-                    .init(id: "legs", exerciseCount: 4, hue: 5, name: "Legs"),
-                ])
-        ]
-
-        /// Routine name planned for each weekday, Monday first; `nil` is a rest day.
-        public var weeklyPlan: [String?] = ["Push", nil, "Pull", nil, "Legs", "Push", nil]
 
         public init() {}
     }
 
     public enum Action {
         case aiRoutineButtonTapped
+        case alert(PresentationAction<Alert>)
+        case deleteButtonTapped(id: Routine.ID)
         case delegate(Delegate)
-        case duplicateButtonTapped(id: String)
+        case duplicateButtonTapped(id: Routine.ID)
         case importButtonTapped
         case newRoutineButtonTapped
-        case routineTapped(id: String)
+        case routineTapped(id: Routine.ID)
         case shareButtonTapped
-        case startButtonTapped(id: String)
+        case startButtonTapped(id: Routine.ID)
+        case task
         case templates(PresentationAction<Templates.Action>)
         case templatesButtonTapped
         case weekdayTapped(Int)
 
+        @CasePathable
+        public enum Alert: Equatable {
+            case confirmDeleteButtonTapped(id: Routine.ID)
+        }
+
+        @CasePathable
         public enum Delegate {
             case navigate(Route)
         }
     }
+
+    @Dependency(\.defaultDatabase) var database
+    @Dependency(\.date.now) var now
 
     public init() {}
 
@@ -49,52 +55,85 @@ public struct Routines {
             switch action {
             case .aiRoutineButtonTapped:
                 return .send(.delegate(.navigate(.aiPlan)))
-            case .delegate, .duplicateButtonTapped, .templates, .weekdayTapped:
+            case let .alert(.presented(.confirmDeleteButtonTapped(id))):
+                return .run { _ in
+                    await withErrorReporting {
+                        try await database.write { db in
+                            try Routine.find(id).delete().execute(db)
+                        }
+                    }
+                }
+            case let .deleteButtonTapped(id):
+                guard let routine = state.listing.routine(id: id) else { return .none }
+                state.alert = .deleteRoutine(id: id, title: routine.title)
                 return .none
+            case .alert, .delegate, .shareButtonTapped, .templates, .weekdayTapped:
+                return .none
+            case let .duplicateButtonTapped(id):
+                guard let routine = state.listing.routine(id: id) else { return .none }
+                let name = L10n.copySuffix(routine.title)
+                return .run { _ in
+                    await withErrorReporting {
+                        try await database.write { db in
+                            try Routine.duplicate(db, id: id, name: name)
+                        }
+                    }
+                }
             case .importButtonTapped:
                 return .send(.delegate(.navigate(.planImport)))
             case .newRoutineButtonTapped:
                 return .send(.delegate(.navigate(.routineEdit(id: nil))))
             case let .routineTapped(id):
                 return .send(.delegate(.navigate(.routineEdit(id: id))))
-            case .shareButtonTapped:
-                return .none
-            case .startButtonTapped:
-                return .send(.delegate(.navigate(.session)))
+            case let .startButtonTapped(id):
+                // Starting while a workout is in progress resumes it instead (see `LiveWorkout.start`).
+                return .run { [now] send in
+                    await withErrorReporting {
+                        _ = try await database.write { db in
+                            try LiveWorkout.start(db, routineID: id, now: now)
+                        }
+                        await send(.delegate(.navigate(.session)))
+                    }
+                }
+            case .task:
+                return .run { [listing = state.$listing] _ in
+                    await withErrorReporting {
+                        try await listing.load(RoutineListing.Request()).task
+                    }
+                }
             case .templatesButtonTapped:
                 state.templates = Templates.State()
                 return .none
             }
         }
+        .ifLet(\.$alert, action: \.alert)
         .ifLet(\.$templates, action: \.templates) {
             Templates()
         }
     }
 }
 
-public struct RoutineGroup: Equatable, Identifiable, Sendable {
-    /// Group name; empty for ungrouped routines.
-    public var id: String
-    public var routines: [RoutineCard]
-
-    public init(id: String, routines: [RoutineCard]) {
-        self.id = id
-        self.routines = routines
+extension RoutineCard {
+    /// The name, or "New routine" while it has none.
+    public var title: String {
+        name.isEmpty ? L10n.newRoutineName : name
     }
 }
 
-public struct RoutineCard: Equatable, Identifiable, Sendable {
-    public var id: String
-    public var exerciseCount: Int
-    /// Index into `GymColor.folderHues`.
-    public var hue: Int
-    public var name: String
-
-    public init(id: String, exerciseCount: Int, hue: Int, name: String) {
-        self.id = id
-        self.exerciseCount = exerciseCount
-        self.hue = hue
-        self.name = name
+extension AlertState where Action == Routines.Action.Alert {
+    public static func deleteRoutine(id: Routine.ID, title: String) -> Self {
+        AlertState {
+            TextState(L10n.deleteRoutine)
+        } actions: {
+            ButtonState(role: .destructive, action: .confirmDeleteButtonTapped(id: id)) {
+                TextState(L10n.delete)
+            }
+            ButtonState(role: .cancel) {
+                TextState(L10n.cancel)
+            }
+        } message: {
+            TextState(title)
+        }
     }
 }
 
