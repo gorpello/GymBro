@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -19,30 +20,34 @@ public struct ExerciseEditorView: View {
                     .background(GymColor.bgRaised, in: .rect(cornerRadius: 18))
                 section(L10n.muscleFilter) {
                     FlowLayout {
-                        ForEach(muscleIDs, id: \.self) { id in
-                            Pill(L10n.muscle(id), selected: store.primary == id) { store.primary = id }
+                        ForEach(Muscle.all, id: \.self) { muscle in
+                            Pill(L10n.muscle(muscle.rawValue), selected: store.primary == muscle) {
+                                store.primary = muscle
+                            }
                         }
                     }
                 }
                 section(L10n.secondaryLabel) {
                     FlowLayout {
-                        ForEach(muscleIDs.filter { $0 != store.primary }, id: \.self) { id in
-                            ToggleChip(L10n.muscle(id), isOn: store.secondary.contains(id)) {
-                                store.send(.secondaryMuscleTapped(id))
+                        ForEach(Muscle.all.filter { $0 != store.primary }, id: \.self) { muscle in
+                            ToggleChip(L10n.muscle(muscle.rawValue), isOn: store.secondary.contains(muscle)) {
+                                store.send(.secondaryMuscleTapped(muscle))
                             }
                         }
                     }
                 }
                 section(L10n.equipmentLabel) {
                     FlowLayout {
-                        ForEach(equipmentIDs, id: \.self) { id in
-                            Pill(L10n.equipment(id), selected: store.equipment == id) { store.equipment = id }
+                        ForEach(Equipment.all, id: \.self) { equipment in
+                            Pill(L10n.equipment(equipment.rawValue), selected: store.equipment == equipment) {
+                                store.equipment = equipment
+                            }
                         }
                     }
                 }
                 section(L10n.levelFilter) {
                     SegToggle(
-                        ["Beginner", "Intermediate", "Advanced"].map { ($0, L10n.difficulty($0)) },
+                        Difficulty.all.map { ($0, L10n.difficulty($0.rawValue)) },
                         selection: $store.difficulty,
                         fontSize: 13
                     )
@@ -50,11 +55,11 @@ public struct ExerciseEditorView: View {
                 section(L10n.exerciseTypeLabel) {
                     SegToggle(
                         [
-                            (ExerciseEditor.LogBy.reps, L10n.typeReps),
+                            (ExerciseMode.weight, L10n.typeReps),
                             (.time, L10n.typeTime),
                             (.cardio, L10n.typeCardio),
                         ],
-                        selection: $store.logBy,
+                        selection: $store.mode,
                         fontSize: 13
                     )
                 }
@@ -65,15 +70,15 @@ public struct ExerciseEditorView: View {
                         .padding(16)
                         .background(GymColor.bgRaised, in: .rect(cornerRadius: 18))
                 }
-                Button(L10n.addExercise.titleCased) {
+                Button(store.isNew ? L10n.addExercise.titleCased : L10n.saveChanges) {
                     store.send(.saveButtonTapped)
                 }
                 .buttonStyle(.primary)
-                .disabled(store.name.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(!store.canSave)
             }
             .padding(20)
         }
-        .gymScreen(L10n.newExercise)
+        .gymScreen(store.isNew ? L10n.newExercise : L10n.editExercise)
         .toolbar {
             ToolbarItem(placement: .cancellationAction) {
                 Button(role: .cancel) { store.send(.cancelButtonTapped) }

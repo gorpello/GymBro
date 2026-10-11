@@ -95,7 +95,7 @@ public struct Train: Sendable {
                 guard !exerciseIDs.isEmpty else { return .none }
                 return .run { [now] send in
                     await withErrorReporting {
-                        try await database.write { db in
+                        _ = try await database.write { db in
                             try LiveWorkout.start(db, exerciseIDs: exerciseIDs, now: now)
                         }
                         await send(.delegate(.navigate(.session)))

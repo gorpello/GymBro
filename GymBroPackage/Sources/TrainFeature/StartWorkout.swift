@@ -54,7 +54,7 @@ public struct StartWorkout: Sendable {
                 // Starting while a workout is in progress resumes it instead (see `LiveWorkout.start`).
                 return .run { [now] send in
                     await withErrorReporting {
-                        try await database.write { db in
+                        _ = try await database.write { db in
                             try LiveWorkout.start(db, routineID: id, now: now)
                         }
                         await send(.delegate(.navigate(.session)))
