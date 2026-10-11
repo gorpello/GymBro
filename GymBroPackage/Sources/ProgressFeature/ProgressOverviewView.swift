@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -10,6 +11,9 @@ public struct ProgressOverviewView: View {
         self.store = store
     }
 
+    private var summary: ProgressSummary { store.summary }
+    private var units: WeightUnit { summary.units }
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
@@ -20,14 +24,20 @@ public struct ProgressOverviewView: View {
                 }
                 consistency
                 HStack(spacing: 12) {
-                    totalTile(L10n.allTimeSessions, value: "\(store.totalSessions)")
-                    totalTile(L10n.allTimeSets, value: "\(store.totalSets)")
-                    totalTile(L10n.allTimeTime, value: store.totalHours, unit: L10n.unitHours)
+                    totalTile(L10n.allTimeSessions, value: "\(summary.totals.workoutCount)")
+                    totalTile(L10n.allTimeSets, value: "\(summary.totals.setCount)")
+                    totalTile(
+                        L10n.allTimeTime,
+                        value: ProgressFormat.hours(summary.totals.trainingSeconds),
+                        unit: L10n.unitHours
+                    )
                 }
                 thisWeek
                 muscleMap
                 strength
-                records
+                if !summary.records.isEmpty {
+                    records
+                }
                 timeline
                 measures
             }
@@ -36,6 +46,7 @@ public struct ProgressOverviewView: View {
         }
         .gymBackground()
         .toolbar(.hidden, for: .navigationBar)
+        .task { await store.send(.task).finish() }
     }
 
     private var header: some View {
@@ -54,16 +65,20 @@ public struct ProgressOverviewView: View {
             HStack {
                 Kicker(L10n.tileVolume30, size: 11, spacing: 1.5)
                 Spacer()
-                HStack(spacing: 3) {
-                    GymIcon(.trendUp, weight: .bold, size: 12)
-                    Text(store.volumeTrendPercent)
+                if let change = summary.volumeChangePercent {
+                    HStack(spacing: 3) {
+                        GymIcon(change >= 0 ? .trendUp : .trendDown, weight: .bold, size: 12)
+                        Text(ProgressFormat.change(change))
+                    }
+                    .font(.gym(12, .bold))
+                    .foregroundStyle(change >= 0 ? GymColor.sage : GymColor.accent)
                 }
-                .font(.gym(12, .bold))
-                .foregroundStyle(GymColor.sage)
             }
-            StatValue(store.volume30, unit: store.volumeUnit, size: 30)
-            Sparkline(store.volumeTrend)
+            let volume = ProgressFormat.volume(summary.volume30Kg, units: units)
+            StatValue(volume.value, unit: volume.unit, size: 30)
+            Sparkline(summary.volumeTrendKg.map { units.value(fromKilograms: $0) / 1_000 })
                 .frame(height: 44)
+                .opacity(summary.volumeTrendKg.isEmpty ? 0 : 1)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .softCard(padding: 18, radius: 24)
@@ -73,13 +88,14 @@ public struct ProgressOverviewView: View {
         VStack(alignment: .leading, spacing: 4) {
             Kicker(L10n.weightLabel, size: 11, spacing: 1.5)
                 .padding(.bottom, 6)
-            if let weight = store.weight {
-                StatValue(weight, unit: store.weightUnit, size: 30)
-                Text(store.weightDate)
+            if let weight = summary.weight {
+                StatValue(ProgressFormat.weight(weight.value, units: units), unit: units.rawValue, size: 30)
+                Text(ProgressFormat.shortDate(weight.date))
                     .font(.gym(12.5, .medium))
                     .foregroundStyle(GymColor.textSecondary)
-                Sparkline(store.weightTrend)
+                Sparkline(summary.weightTrendKg.map(units.value(fromKilograms:)))
                     .frame(height: 40)
+                    .opacity(summary.weightTrendKg.count < 2 ? 0 : 1)
             } else {
                 Text(L10n.tileAddWeight)
                     .font(.gym(16, .bold))
@@ -103,15 +119,15 @@ public struct ProgressOverviewView: View {
                     }
                 }
             }
-            HeatGrid(weeks: store.activity)
+            HeatGrid(weeks: summary.activity)
             HStack {
                 GymIcon(.flame, weight: .fill, size: 14)
                     .foregroundStyle(GymColor.accent)
-                Text(L10n.streakDays(store.streak))
+                Text(L10n.streakDays(summary.streak))
                     .font(.gym(14, .bold))
                     .foregroundStyle(GymColor.text)
                 Spacer()
-                Text(L10n.weekOfGoal(n: store.weeklySessions, goal: store.weeklyGoal))
+                Text(L10n.weekOfGoal(n: summary.daysDoneThisWeek, goal: summary.weeklyGoal))
                     .font(.gym(13, .medium))
                     .foregroundStyle(GymColor.textSecondary)
             }
@@ -130,14 +146,14 @@ public struct ProgressOverviewView: View {
             HStack {
                 Kicker(L10n.thisWeekTitle, size: 11, spacing: 1.5)
                 Spacer()
-                Text(L10n.setsThisWeek(store.setsThisWeek.reduce(0, +)))
+                Text(L10n.setsThisWeek(summary.setsThisWeek.reduce(0, +)))
                     .font(.gym(12.5, .semibold))
                     .foregroundStyle(GymColor.textSecondary)
             }
-            let peak = max(store.setsThisWeek.max() ?? 1, 1)
+            let peak = max(summary.setsThisWeek.max() ?? 1, 1)
             HStack(alignment: .bottom, spacing: 10) {
                 ForEach(Array(L10n.weekdayInitials.enumerated()), id: \.offset) { index, initial in
-                    let sets = index < store.setsThisWeek.count ? store.setsThisWeek[index] : 0
+                    let sets = index < summary.setsThisWeek.count ? summary.setsThisWeek[index] : 0
                     VStack(spacing: 8) {
                         RoundedRectangle(cornerRadius: 6)
                             .fill(sets > 0 ? GymColor.accent : GymColor.heatEmpty)
@@ -171,14 +187,14 @@ public struct ProgressOverviewView: View {
             }
             switch store.muscleRange {
             case .days7:
-                BodyMapView(levels: store.muscleLevels7)
+                BodyMapView(levels: Self.levels(summary.muscleHeat7))
                 HeatLegend(low: L10n.heatLow, high: L10n.heatHigh)
             case .days30:
-                BodyMapView(levels: store.muscleLevels30)
+                BodyMapView(levels: Self.levels(summary.muscleHeat30))
                 HeatLegend(low: L10n.heatLow, high: L10n.heatHigh)
             case .recovery:
-                BodyMapView(levels: store.recoveryLevels, tone: .green)
-                Text(L10n.recoveryOverall(Double(store.recoveryPercent) / 100))
+                BodyMapView(levels: Self.levels(summary.fatigueLevels), tone: .green)
+                Text(L10n.recoveryOverall(Double(summary.recoveryPercent) / 100))
                     .font(.gym(14, .bold))
                     .foregroundStyle(GymColor.text)
                 HeatLegend(low: L10n.recoveryFresh, high: L10n.recoveryTired, tone: .green)
@@ -194,12 +210,12 @@ public struct ProgressOverviewView: View {
         VStack(alignment: .leading, spacing: 4) {
             Kicker(L10n.strength1rm, size: 11, spacing: 1.5)
                 .padding(.bottom, 8)
-            if store.strength.isEmpty {
+            if summary.strength.isEmpty {
                 Text(L10n.strengthEmpty)
                     .font(.gym(13, .medium))
                     .foregroundStyle(GymColor.textSecondary)
             }
-            ForEach(store.strength) { row in
+            ForEach(summary.strength) { row in
                 Button {
                     store.send(.exerciseTapped(id: row.id))
                 } label: {
@@ -209,12 +225,12 @@ public struct ProgressOverviewView: View {
                                 .font(.gym(14.5, .bold))
                                 .foregroundStyle(GymColor.text)
                                 .lineLimit(1)
-                            Text(row.bestOneRm)
+                            Text("\(ProgressFormat.weight(row.bestOneRepMaxKg, units: units)) \(units.rawValue)")
                                 .font(.gym(12.5, .medium))
                                 .foregroundStyle(GymColor.textSecondary)
                         }
                         Spacer()
-                        Sparkline(row.curve, showsRange: false)
+                        Sparkline(row.curveKg.map(units.value(fromKilograms:)), showsRange: false)
                             .frame(width: 96, height: 32)
                     }
                     .padding(.vertical, 10)
@@ -229,7 +245,7 @@ public struct ProgressOverviewView: View {
         VStack(alignment: .leading, spacing: 4) {
             Kicker(L10n.personalRecords, size: 11, spacing: 1.5)
                 .padding(.bottom, 8)
-            ForEach(store.records) { row in
+            ForEach(summary.records) { row in
                 HStack {
                     GymIcon(.trophy, weight: .fill, size: 16)
                         .foregroundStyle(GymColor.brass)
@@ -237,12 +253,12 @@ public struct ProgressOverviewView: View {
                         Text(row.name)
                             .font(.gym(14.5, .bold))
                             .foregroundStyle(GymColor.text)
-                        Text(row.date)
+                        Text(ProgressFormat.shortDate(row.record.date))
                             .font(.gym(12, .medium))
                             .foregroundStyle(GymColor.textSecondary)
                     }
                     Spacer()
-                    Text(row.best)
+                    Text(ProgressFormat.record(row.record, units: units))
                         .font(.gym(16, .extraBold))
                         .foregroundStyle(GymColor.text)
                 }
@@ -260,7 +276,7 @@ public struct ProgressOverviewView: View {
                 HStack {
                     Kicker(L10n.timeline, size: 11, spacing: 1.5)
                     Spacer()
-                    Text(L10n.photoCount(store.photoCount))
+                    Text(L10n.photoCount(summary.photoCount))
                         .font(.gym(12.5, .semibold))
                         .foregroundStyle(GymColor.textSecondary)
                     GymIcon(.caretRight, weight: .bold, size: 12)
@@ -292,17 +308,20 @@ public struct ProgressOverviewView: View {
                     GymIcon(.caretRight, weight: .bold, size: 12)
                         .foregroundStyle(GymColor.textTertiary)
                 }
-                Text(L10n.measuresHint)
-                    .font(.gym(13, .medium))
-                    .foregroundStyle(GymColor.textSecondary)
-                    .multilineTextAlignment(.leading)
+                if summary.measures.isEmpty {
+                    Text(L10n.measuresHint)
+                        .font(.gym(13, .medium))
+                        .foregroundStyle(GymColor.textSecondary)
+                        .multilineTextAlignment(.leading)
+                }
                 LazyVGrid(columns: [GridItem(.adaptive(minimum: 92), spacing: 10)], spacing: 10) {
-                    ForEach(store.measureRows) { row in
+                    ForEach(summary.measures) { measurement in
+                        let shown = ProgressFormat.measure(measurement, units: units)
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(L10n.measureName(row.id))
+                            Text(L10n.measureName(measurement.kind.rawValue))
                                 .font(.gym(11.5, .semibold))
                                 .foregroundStyle(GymColor.textSecondary)
-                            StatValue(row.value ?? "–", unit: row.value == nil ? nil : row.unit, size: 18)
+                            StatValue(shown.value, unit: shown.unit, size: 18)
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(12)
@@ -316,6 +335,25 @@ public struct ProgressOverviewView: View {
     }
 }
 
+extension ProgressOverviewView {
+    /// Body map levels are keyed by muscle id.
+    fileprivate static func levels(_ levels: [Muscle: Int]) -> [String: Int] {
+        Dictionary(uniqueKeysWithValues: levels.map { ($0.key.rawValue, $0.value) })
+    }
+}
+
 #Preview {
-    ProgressOverviewView(store: Store(initialState: ProgressOverview.State()) { ProgressOverview() })
+    ProgressOverviewView(store: previewStore())
+}
+
+/// A store backed by a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<ProgressOverview> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: ProgressOverview.State()) { ProgressOverview() }
 }

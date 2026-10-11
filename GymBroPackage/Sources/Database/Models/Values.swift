@@ -31,6 +31,12 @@ public struct Muscle: Codable, Hashable, QueryBindable, RawRepresentable, Sendab
     public static let shoulders = Self(rawValue: "shoulders")
     public static let trapezius = Self(rawValue: "trapezius")
     public static let triceps = Self(rawValue: "triceps")
+
+    /// Every muscle on the map.
+    public static let all: [Self] = [
+        .abdomen, .back, .biceps, .calves, .chest, .forearm, .glutes, .hamstrings, .obliques, .quads, .shoulders,
+        .trapezius, .triceps,
+    ]
 }
 
 public struct Equipment: Hashable, QueryBindable, RawRepresentable, Sendable {

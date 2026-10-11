@@ -6,7 +6,7 @@ let package = Package(
   name: "GymBroPackage",
   defaultLocalization: "en",
   platforms: [
-    .iOS("27.0"),
+    .iOS("27.0")
   ],
   products: [
     // App
@@ -115,7 +115,7 @@ let package = Package(
     .target(
       name: "L10n",
       resources: [
-        .process("Resources"),
+        .process("Resources")
       ]
     ),
     .target(
@@ -235,10 +235,12 @@ let package = Package(
     .target(
       name: "ProgressFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -328,7 +330,7 @@ let package = Package(
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
       ],
       exclude: [
-        "__Snapshots__",
+        "__Snapshots__"
       ]
     ),
     .testTarget(
@@ -346,7 +348,7 @@ let package = Package(
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
       ],
       exclude: [
-        "__Snapshots__",
+        "__Snapshots__"
       ]
     ),
     .testTarget(
@@ -357,7 +359,18 @@ let package = Package(
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
       ],
       exclude: [
-        "__Snapshots__",
+        "__Snapshots__"
+      ]
+    ),
+    .testTarget(
+      name: "ProgressFeatureTests",
+      dependencies: [
+        "ProgressFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__"
       ]
     ),
     .testTarget(
@@ -369,7 +382,7 @@ let package = Package(
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
       ],
       exclude: [
-        "__Snapshots__",
+        "__Snapshots__"
       ]
     ),
     .testTarget(
@@ -398,8 +411,9 @@ if Context.environment["CI"] == nil {
     .package(url: "https://github.com/SimplyDanny/SwiftLintPlugins", from: "0.65.0")
   )
   for target in package.targets where target.type == .regular || target.type == .test {
-    target.plugins = (target.plugins ?? []) + [
-      .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins"),
-    ]
+    target.plugins =
+      (target.plugins ?? []) + [
+        .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLintPlugins")
+      ]
   }
 }

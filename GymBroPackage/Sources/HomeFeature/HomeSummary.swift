@@ -6,7 +6,7 @@ import SQLiteData
 /// workout, check-in, routine, note or the profile changes. Weeks start on Monday.
 nonisolated public struct HomeSummary: Equatable, Sendable {
 
-    public static let activityWeeks = 12
+    public static let activityWeeks = ActivityGrid.weeks
 
     /// Last twelve weeks, `activity[week][weekday]`, oldest week first, levels 0…4.
     public var activity = Array(repeating: Array(repeating: 0, count: 7), count: activityWeeks)
@@ -60,7 +60,10 @@ extension HomeSummary {
             let scheduledWeekdays = try Set(RoutineSchedule.select(\.weekday).fetchAll(db))
             let totals = try fetchWorkoutTotals(db, since: activityStart)
             let todayRoutines = try fetchRoutines(db, onWeekday: todayIndex + 1)
-            let recordSets = try fetchRecordSets(db, forExercisesTrainedFrom: weekStart, to: weekEnd)
+            let recordSets = try PersonalRecord.fetchSets(
+                db,
+                exerciseIDs: fetchExerciseIDs(db, trainedFrom: weekStart, to: weekEnd)
+            )
 
             var summary = HomeSummary()
             summary.todayWeekdayIndex = todayIndex
@@ -95,12 +98,13 @@ extension HomeSummary {
                 if day >= weekStart, day < weekEnd { summary.volumeThisWeekKg += workout.volumeKg }
             }
 
-            summary.activity = activityLevels(
+            summary.activity = ActivityGrid.levels(
                 from: activityStart,
                 through: today,
                 sessionDays: sessionDays,
                 checkInDays: checkInDays,
-                setCounts: Dictionary(uniqueKeysWithValues: totals.map { ($0.id, $0.setCount) })
+                setCounts: Dictionary(uniqueKeysWithValues: totals.map { ($0.id, $0.setCount) }),
+                calendar: calendar
             )
             summary.streak = Streak.count(
                 endingOn: today,
@@ -108,9 +112,8 @@ extension HomeSummary {
                 scheduledWeekdays: scheduledWeekdays,
                 calendar: calendar
             )
-            summary.prCount = Dictionary(grouping: recordSets, by: \.exerciseID).values.count { sets in
-                guard let date = RecordKind.bestDate(of: sets) else { return false }
-                return date >= weekStart && date < weekEnd
+            summary.prCount = PersonalRecord.records(from: recordSets).count { record in
+                record.date >= weekStart && record.date < weekEnd
             }
             return summary
         }
@@ -153,80 +156,16 @@ extension HomeSummary {
                 .fetchAll(db)
         }
 
-        /// Every working set, oldest first, of the exercises trained in `start..<end`.
-        private func fetchRecordSets(
-            _ db: Database,
-            forExercisesTrainedFrom start: Date,
-            to end: Date
-        ) throws -> [RecordSet] {
-            try WorkoutSet
-                .where { $0.isCompleted && $0.kind.neq(SetKind.warmup) }
-                .join(WorkoutExercise.all) { $0.workoutExerciseID.eq($1.id) }
-                .join(Workout.all) { $1.workoutID.eq($2.id) }
-                .where { _, workoutExercises, workouts in
-                    workouts.finishedAt.isNot(nil)
-                        && workoutExercises.exerciseID.in(
-                            WorkoutExercise
-                                .join(Workout.all) { $0.workoutID.eq($1.id) }
-                                .where { _, workouts in
-                                    workouts.finishedAt.isNot(nil)
-                                        && workouts.startedAt.gte(start)
-                                        && workouts.startedAt.lt(end)
-                                }
-                                .select { workoutExercises, _ in workoutExercises.exerciseID }
-                        )
+        /// Exercises in finished workouts started in `start..<end`.
+        private func fetchExerciseIDs(_ db: Database, trainedFrom start: Date, to end: Date) throws -> [Exercise.ID] {
+            try WorkoutExercise
+                .join(Workout.all) { $0.workoutID.eq($1.id) }
+                .where { _, workouts in
+                    workouts.finishedAt.isNot(nil) && workouts.startedAt.gte(start) && workouts.startedAt.lt(end)
                 }
-                .order { workoutSets, workoutExercises, workouts in
-                    (workouts.startedAt, workoutExercises.position, workoutSets.position)
-                }
-                .select { workoutSets, workoutExercises, workouts in
-                    RecordSet.Columns(
-                        exerciseID: workoutExercises.exerciseID,
-                        startedAt: workouts.startedAt,
-                        reps: workoutSets.reps,
-                        weightKg: workoutSets.weightKg,
-                        rpe: workoutSets.rpe,
-                        durationSeconds: workoutSets.durationSeconds,
-                        distanceKm: workoutSets.distanceKm
-                    )
-                }
+                .select { workoutExercises, _ in workoutExercises.exerciseID }
+                .distinct()
                 .fetchAll(db)
-        }
-
-        /// Each day's load is its working sets (at least 1 per workout) plus 1 for a check-in, scaled
-        /// against the busiest day in the window.
-        private func activityLevels(
-            from start: Date,
-            through today: Date,
-            sessionDays: [Workout.ID: Date],
-            checkInDays: Set<Date>,
-            setCounts: [Workout.ID: Int]
-        ) -> [[Int]] {
-            var load: [Date: Double] = [:]
-            for day in checkInDays where day >= start && day <= today {
-                load[day] = 1
-            }
-            for (id, day) in sessionDays where day >= start && day <= today {
-                load[day, default: 0] += Double(max(1, setCounts[id] ?? 0))
-            }
-            let busiest = load.values.max() ?? 0
-            return (0..<HomeSummary.activityWeeks).map { week in
-                (0..<7).map { weekday in
-                    let day = calendar.day(byAdding: week * 7 + weekday, to: start)
-                    guard busiest > 0, let value = load[day] else { return 0 }
-                    return heatLevel(value / busiest)
-                }
-            }
-        }
-
-        private func heatLevel(_ fraction: Double) -> Int {
-            switch fraction {
-            case ...0: 0
-            case ..<0.25: 1
-            case ..<0.5: 2
-            case ..<0.75: 3
-            default: 4
-            }
         }
     }
 }
@@ -248,48 +187,4 @@ nonisolated private struct WorkoutTotals {
 nonisolated private struct TodayRoutine {
     let name: String
     let exerciseCount: Int
-}
-
-@Selection
-nonisolated private struct RecordSet {
-    let exerciseID: Exercise.ID
-    let startedAt: Date
-    let reps: Int
-    let weightKg: Double
-    let rpe: Double?
-    let durationSeconds: Int?
-    let distanceKm: Double?
-}
-
-/// What an exercise's record is measured in: the first kind any of its sets has a value for.
-nonisolated private enum RecordKind: CaseIterable {
-    case weight, distance, time, reps
-
-    func score(_ set: RecordSet) -> Double {
-        switch self {
-        case .weight: set.weightKg
-        case .distance: set.distanceKm ?? 0
-        case .time: Double(set.durationSeconds ?? 0)
-        case .reps: Double(set.reps)
-        }
-    }
-
-    /// When the exercise's best set was first lifted. Weight records compare estimated one-rep
-    /// maxes; matching an earlier best doesn't count. `sets` must be oldest first.
-    static func bestDate(of sets: [RecordSet]) -> Date? {
-        let kind = allCases.first { kind in sets.contains { kind.score($0) > 0 } } ?? .reps
-        var best = 0.0
-        var date: Date?
-        for set in sets {
-            let score =
-                kind == .weight
-                ? WorkoutSet.estimatedOneRepMaxKg(weightKg: set.weightKg, reps: set.reps, rpe: set.rpe)
-                : kind.score(set)
-            if score > best {
-                best = score
-                date = set.startedAt
-            }
-        }
-        return date
-    }
 }
