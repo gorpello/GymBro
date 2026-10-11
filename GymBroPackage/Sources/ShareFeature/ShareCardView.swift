@@ -129,13 +129,14 @@ extension StravaWorkout {
     /// "Sat, Sep 19 · 12 sets · 58 min".
     fileprivate var detail: String {
         let minutes = durationSeconds / 60
-        return [
+        var parts = [
             startedAt.formatted(.dateTime.weekday(.abbreviated).month(.abbreviated).day()),
             L10n.setCount(setCount),
-            minutes > 0 ? Duration.seconds(minutes * 60).formatted(.units(allowed: [.hours, .minutes])) : nil,
         ]
-        .compactMap(\.self)
-        .joined(separator: " · ")
+        if minutes > 0 {
+            parts.append(Duration.seconds(minutes * 60).formatted(.units(allowed: [.hours, .minutes])))
+        }
+        return parts.joined(separator: " · ")
     }
 }
 
