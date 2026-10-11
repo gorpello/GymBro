@@ -386,6 +386,18 @@ let package = Package(
       ]
     ),
     .testTarget(
+      name: "SessionFeatureTests",
+      dependencies: [
+        "SessionFeature",
+        "TrainFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__",
+      ]
+    ),
+    .testTarget(
       name: "SettingsFeatureTests",
       dependencies: [
         "SettingsFeature",

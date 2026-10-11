@@ -6,6 +6,7 @@ import SQLiteData
 /// The "Your profile" sheet. Every change is saved straight away, so there is nothing to confirm.
 @Reducer
 public struct ProfileEdit: Sendable {
+
     @ObservableState
     public struct State: Equatable {
         public var profile: UserProfile
