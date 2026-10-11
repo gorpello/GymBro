@@ -3,7 +3,7 @@ import Foundation
 import SQLiteData
 
 /// What narrows the library. Everything combines; an empty filter shows every active exercise.
-public struct ExerciseFilter: Equatable, Sendable {
+public struct ExerciseFilter: Hashable, Sendable {
     public var search = ""
     public var favouritesOnly = false
     public var noKitOnly = false
@@ -38,6 +38,7 @@ public struct ExerciseFilter: Equatable, Sendable {
 /// The library as listed: matching exercises grouped by main muscle, plus the counts the header
 /// and chips show.
 public struct ExerciseListing: Equatable, Sendable {
+
     public var sections: [ExerciseSection] = []
     public var favouriteCount = 0
     /// Whether anything is archived, so the archived filter is worth offering.

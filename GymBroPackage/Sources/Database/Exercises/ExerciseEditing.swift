@@ -19,7 +19,7 @@ extension Exercise {
             exercise.isArchived = current.isArchived
         }
         try upsert { Draft(exercise) }.execute(db)
-        try ExercisePreference.find(exercise.id).update { $0.modeOverride = nil }.execute(db)
+        try ExercisePreference.find(exercise.id).update { $0.modeOverride = #bind(nil) }.execute(db)
     }
 
     /// Deletes a custom exercise along with its preferences and routine slots; its notes stay,

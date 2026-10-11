@@ -9,7 +9,7 @@ import SQLiteData
 /// similar moves and per-exercise settings. Read from the database (see `ExerciseOverview`);
 /// every setting is saved as soon as it changes.
 @Reducer
-public struct ExerciseDetail {
+public struct ExerciseDetail : Sendable{
     @ObservableState
     public struct State: Equatable {
         @Presents public var alert: AlertState<Action.Alert>?
@@ -69,7 +69,7 @@ public struct ExerciseDetail {
                 return .none
             case .archiveButtonTapped:
                 return write(state) { db, id in
-                    try Exercise.find(id).update { $0.isArchived = !$0.isArchived }.execute(db)
+                    try Exercise.find(id).update { $0.isArchived.toggle() }.execute(db)
                 }
             case let .autoProgressToggled(isOn):
                 let stepKg = state.overview.units == .kg ? Progression.defaultStepKg : 5 * WeightUnit.lb.kilograms
