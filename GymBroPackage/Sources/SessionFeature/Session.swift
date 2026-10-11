@@ -1,70 +1,28 @@
 import ComposableArchitecture
+import Database
+import Foundation
 import Routing
+import SQLiteData
 
 /// The live workout: one exercise at a time with its demo, rest timer and set table,
 /// a lock screen, an overview of all exercises and the finish summary.
+///
+/// The workout lives in the database (see `LiveWorkout`): every tap is written straight away and
+/// the screen re-reads it, so leaving and coming back picks up exactly where it was.
 @Reducer
-public struct Session {
+public struct Session: Sendable {
     @ObservableState
     public struct State: Equatable {
-        public var currentIndex = 0
-        public var isFinished = false
+        @ObservationStateIgnored
+        @Fetch public var session = LiveSession()
+        /// Set once the workout is filed; shows the summary.
+        public var finished: FinishedWorkout?
         public var isLocked = false
-        public var isPaused = false
         public var showsOverview = false
-
-        public var elapsed: String = "00:03"
-
-        public var exercises: [SessionExercise] = [
-            .init(
-                id: "EIeI8Vf", art: "bench-press", last: "90×8 · 90×8 · 92.5×6 · 92.5×6", muscle: "chest",
-                name: "Barbell Bench Press", next: "92.5 kg × 8",
-                sets: [
-                    .init(id: 1, kind: .normal, reps: 8, weight: 90, done: true),
-                    .init(id: 2, kind: .normal, reps: 8, weight: 90, done: true),
-                    .init(id: 3, kind: .normal, reps: 6, weight: 92.5, done: false),
-                    .init(id: 4, kind: .normal, reps: 6, weight: 92.5, done: false),
-                ]),
-            .init(
-                id: "ns0SIbU", art: "incline-dumbbell-press", last: "30×10 · 30×10 · 30×9", muscle: "chest",
-                name: "Dumbbell Incline Bench Press", next: "30 kg × 10",
-                sets: [
-                    .init(id: 1, kind: .normal, reps: 10, weight: 30, done: false),
-                    .init(id: 2, kind: .normal, reps: 10, weight: 30, done: false),
-                    .init(id: 3, kind: .normal, reps: 10, weight: 30, done: false),
-                ]),
-            .init(
-                id: "ohp", art: "overhead-press", last: nil, muscle: "shoulders", name: "Overhead Press", next: nil,
-                sets: [
-                    .init(id: 1, kind: .normal, reps: 8, weight: 50, done: false),
-                    .init(id: 2, kind: .normal, reps: 8, weight: 50, done: false),
-                    .init(id: 3, kind: .normal, reps: 8, weight: 50, done: false),
-                ]),
-            .init(
-                id: "tri1", art: "rope-tricep-pushdown", last: "25×12 · 25×12", muscle: "triceps",
-                name: "Rope Triceps Pushdown", next: "27.5 kg × 12",
-                sets: [
-                    .init(id: 1, kind: .normal, reps: 12, weight: 25, done: false),
-                    .init(id: 2, kind: .normal, reps: 12, weight: 25, done: false),
-                ]),
-        ]
-
-        /// Rest countdown ("2:30"); `nil` when not resting.
-        public var restRemaining: String? = "2:30"
-        /// Rest progress from 1 (just started) to 0 (over).
-        public var restProgress: Double = 0.85
-
-        public var summary: SessionSummary? = SessionSummary(
-            duration: "58 min", prCount: 2, volume: "8.4", volumeUnit: "t", vsLastTime: "+320 kg volume, one more set")
-
-        public var unit: String = "kg"
-
-        public var current: SessionExercise? {
-            exercises.indices.contains(currentIndex) ? exercises[currentIndex] : nil
-        }
-
-        public var setsDone: Int { exercises.flatMap(\.sets).filter(\.done).count }
-        public var setsTotal: Int { exercises.flatMap(\.sets).count }
+        /// The clock the timers are drawn from, ticked every second while the screen is up.
+        public var now: Date?
+        /// Length of the rest that's running, so its progress can be drawn.
+        public var restTotalSeconds: Int?
 
         public init() {}
     }
@@ -82,21 +40,30 @@ public struct Session {
         case nextExerciseButtonTapped
         case overviewButtonTapped
         case pauseButtonTapped
-        case repsChanged(setID: Int, delta: Int)
+        case repsChanged(setID: WorkoutSet.ID, delta: Int)
         case restAdjustButtonTapped(seconds: Int)
         case saveAsRoutineButtonTapped
-        case setDoneButtonTapped(setID: Int)
+        case setDoneButtonTapped(setID: WorkoutSet.ID)
         case shareButtonTapped
         case skipRestButtonTapped
         case stickerButtonTapped
+        case task
+        case timerTicked
         case unlockCompleted
-        case weightChanged(setID: Int, delta: Double)
+        /// `delta` is in the user's unit, e.g. +5 lb.
+        case weightChanged(setID: WorkoutSet.ID, delta: Double)
+        case workoutFinished(FinishedWorkout?)
 
+        @CasePathable
         public enum Delegate {
             case navigate(Route)
         }
     }
 
+    @Dependency(\.calendar) var calendar
+    @Dependency(\.continuousClock) var clock
+    @Dependency(\.defaultDatabase) var database
+    @Dependency(\.date.now) var now
     @Dependency(\.dismiss) var dismiss
 
     public init() {}
@@ -105,129 +72,189 @@ public struct Session {
         BindingReducer()
         Reduce { state, action in
             switch action {
-            case .addExerciseButtonTapped, .binding, .delegate, .restAdjustButtonTapped,
-                .saveAsRoutineButtonTapped, .skipRestButtonTapped:
+            case .addExerciseButtonTapped, .binding, .delegate, .saveAsRoutineButtonTapped:
                 return .none
+
             case .addSetButtonTapped:
-                guard let last = state.current?.sets.last else { return .none }
-                state.exercises[state.currentIndex].sets.append(
-                    SessionSet(id: last.id + 1, kind: .normal, reps: last.reps, weight: last.weight, done: false)
-                )
-                return .none
+                guard let entry = state.current else { return .none }
+                return write { db in try LiveWorkout.addSet(db, to: entry.id) }
+
             case .addWarmupButtonTapped:
-                guard let first = state.current?.sets.first else { return .none }
-                state.exercises[state.currentIndex].sets.insert(
-                    SessionSet(
-                        id: (state.current?.sets.map(\.id).max() ?? 0) + 1, kind: .warmup, reps: first.reps,
-                        weight: first.weight / 2, done: false),
-                    at: 0
-                )
-                return .none
+                guard let entry = state.current else { return .none }
+                return write { db in try LiveWorkout.addWarmup(db, to: entry.id) }
+
             case .doneButtonTapped:
-                return .run { [dismiss] _ in await dismiss() }
+                return .run { _ in await dismiss() }
+
             case let .exerciseSelected(index):
-                state.currentIndex = index
                 state.showsOverview = false
-                return .none
+                return move(state, to: index)
+
             case .finishButtonTapped:
-                state.isFinished = true
-                return .none
+                guard let workoutID = state.session.workout?.id else { return .none }
+                return .run { [now, calendar] send in
+                    await withErrorReporting {
+                        let finished = try await database.write { db in
+                            try LiveWorkout.finish(db, workoutID: workoutID, now: now, calendar: calendar)
+                        }
+                        await send(.workoutFinished(finished))
+                    }
+                }
+
             case .lockButtonTapped:
                 state.isLocked = true
                 return .none
+
             case .nextExerciseButtonTapped:
-                state.currentIndex = min(state.currentIndex + 1, state.exercises.count - 1)
-                return .none
+                return move(state, to: state.currentIndex + 1)
+
             case .overviewButtonTapped:
                 state.showsOverview = true
                 return .none
+
             case .pauseButtonTapped:
-                state.isPaused.toggle()
-                return .none
+                guard let workout = state.session.workout else { return .none }
+                state.now = now
+                return write { [now] db in
+                    if workout.isPaused {
+                        try LiveWorkout.resume(db, workoutID: workout.id, now: now)
+                    } else {
+                        try LiveWorkout.pause(db, workoutID: workout.id, now: now)
+                    }
+                }
+
             case let .repsChanged(setID, delta):
-                state.updateSet(setID) { $0.reps = max(0, $0.reps + delta) }
-                return .none
+                return write { db in try LiveWorkout.adjustSet(db, id: setID, reps: delta) }
+
+            case let .restAdjustButtonTapped(seconds):
+                guard let workout = state.session.workout, let remaining = workout.restRemainingSeconds(at: now)
+                else { return .none }
+                let adjusted = min(max(remaining + seconds, 5), 600)
+                state.restTotalSeconds = max(adjusted, (state.restTotalSeconds ?? remaining) + adjusted - remaining)
+                return write { [now] db in
+                    try LiveWorkout.adjustRest(db, workoutID: workout.id, by: seconds, now: now)
+                }
+
             case let .setDoneButtonTapped(setID):
-                state.updateSet(setID) { $0.done.toggle() }
-                return .none
+                guard
+                    let workout = state.session.workout,
+                    let entry = state.session.exercises.first(where: { $0.sets.contains { $0.id == setID } }),
+                    let set = entry.sets.first(where: { $0.id == setID })
+                else { return .none }
+                // Ticking a set starts the rest; unticking leaves the clock alone.
+                let startsRest = !set.isCompleted && !workout.isPaused && entry.restSeconds > 0
+                if startsRest {
+                    state.now = now
+                    state.restTotalSeconds = entry.restSeconds
+                }
+                return write { [now] db in
+                    try LiveWorkout.toggleSet(db, id: setID)
+                    if startsRest {
+                        try LiveWorkout.startRest(db, workoutID: workout.id, seconds: entry.restSeconds, now: now)
+                    }
+                }
+
             case .shareButtonTapped:
                 return .send(.delegate(.navigate(.share)))
+
+            case .skipRestButtonTapped:
+                guard let workout = state.session.workout else { return .none }
+                state.restTotalSeconds = nil
+                return write { db in try LiveWorkout.skipRest(db, workoutID: workout.id) }
+
             case .stickerButtonTapped:
                 return .send(.delegate(.navigate(.sticker)))
+
+            case .task:
+                state.now = now
+                return .merge(
+                    .run { [session = state.$session] _ in
+                        await withErrorReporting {
+                            try await session.load(LiveSession.Request()).task
+                        }
+                    },
+                    .run { send in
+                        for await _ in clock.timer(interval: .seconds(1)) {
+                            await send(.timerTicked)
+                        }
+                    }
+                )
+
+            case .timerTicked:
+                state.now = now
+                if state.restRemainingSeconds == nil {
+                    state.restTotalSeconds = nil
+                }
+                return .none
+
             case .unlockCompleted:
                 state.isLocked = false
                 return .none
+
             case let .weightChanged(setID, delta):
-                state.updateSet(setID) { $0.weight = max(0, $0.weight + delta) }
+                let units = state.session.units
+                return write { db in try LiveWorkout.adjustSet(db, id: setID, weightKg: delta * units.kilograms) }
+
+            case let .workoutFinished(finished):
+                guard let finished else {
+                    // Nothing was ticked, so nothing was logged.
+                    return .run { _ in await dismiss() }
+                }
+                state.finished = finished
+                state.isLocked = false
+                state.restTotalSeconds = nil
                 return .none
+            }
+        }
+    }
+
+    private func move(_ state: State, to index: Int) -> Effect<Action> {
+        guard let workout = state.session.workout, state.session.exercises.indices.contains(index) else {
+            return .none
+        }
+        return write { db in try LiveWorkout.move(db, workoutID: workout.id, toPosition: index) }
+    }
+
+    private func write(_ change: @escaping @Sendable (Database) throws -> Void) -> Effect<Action> {
+        .run { _ in
+            await withErrorReporting {
+                try await database.write(change)
             }
         }
     }
 }
 
 extension Session.State {
-    mutating func updateSet(_ id: Int, _ update: (inout SessionSet) -> Void) {
-        guard
-            exercises.indices.contains(currentIndex),
-            let index = exercises[currentIndex].sets.firstIndex(where: { $0.id == id })
-        else { return }
-        update(&exercises[currentIndex].sets[index])
+    public var isFinished: Bool { finished != nil }
+    public var isPaused: Bool { session.workout?.isPaused ?? false }
+
+    /// The exercise on screen.
+    public var currentIndex: Int {
+        let position = session.workout?.currentPosition ?? 0
+        return min(max(position, 0), max(session.exercises.count - 1, 0))
     }
-}
 
-public struct SessionExercise: Equatable, Identifiable, Sendable {
-    public var id: String
-    public var art: String
-    /// "90×8 · 90×8 · 92.5×6" from the last time.
-    public var last: String?
-    public var muscle: String
-    public var name: String
-    /// "92.5 kg × 8".
-    public var next: String?
-    public var sets: [SessionSet]
-
-    public init(id: String, art: String, last: String?, muscle: String, name: String, next: String?, sets: [SessionSet])
-    {
-        self.id = id
-        self.art = art
-        self.last = last
-        self.muscle = muscle
-        self.name = name
-        self.next = next
-        self.sets = sets
+    public var current: LiveSession.Entry? {
+        session.exercises.indices.contains(currentIndex) ? session.exercises[currentIndex] : nil
     }
-}
 
-public struct SessionSet: Equatable, Identifiable, Sendable {
-    public enum Kind: Sendable { case normal, warmup, drop, failure, restPause }
-
-    public var id: Int
-    public var kind: Kind
-    public var reps: Int
-    public var weight: Double
-    public var done: Bool
-
-    public init(id: Int, kind: Kind, reps: Int, weight: Double, done: Bool) {
-        self.id = id
-        self.kind = kind
-        self.reps = reps
-        self.weight = weight
-        self.done = done
+    public var elapsedSeconds: Int {
+        guard let workout = session.workout, let now else { return 0 }
+        return workout.elapsedSeconds(at: now)
     }
-}
 
-public struct SessionSummary: Equatable, Sendable {
-    public var duration: String
-    public var prCount: Int
-    public var volume: String
-    public var volumeUnit: String
-    public var vsLastTime: String?
-
-    public init(duration: String, prCount: Int, volume: String, volumeUnit: String, vsLastTime: String?) {
-        self.duration = duration
-        self.prCount = prCount
-        self.volume = volume
-        self.volumeUnit = volumeUnit
-        self.vsLastTime = vsLastTime
+    /// `nil` when not resting.
+    public var restRemainingSeconds: Int? {
+        guard let workout = session.workout, let now else { return nil }
+        return workout.restRemainingSeconds(at: now)
     }
+
+    /// From 1 (rest just started) down to 0.
+    public var restProgress: Double {
+        guard let remaining = restRemainingSeconds, let total = restTotalSeconds, total > 0 else { return 0 }
+        return min(Double(remaining) / Double(total), 1)
+    }
+
+    /// The weight stepper's step, in the user's unit.
+    public var weightStep: Double { session.units == .kg ? 2.5 : 5 }
 }

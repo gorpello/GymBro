@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -26,6 +27,7 @@ public struct SessionView: View {
             }
         }
         .animation(.easeInOut(duration: 0.2), value: store.isLocked)
+        .task { await store.send(.task).finish() }
         .sheet(isPresented: $store.showsOverview) {
             overview
         }
@@ -37,19 +39,20 @@ public struct SessionView: View {
                 topBar
                 progress
                 if let exercise = store.current {
-                    Text(exercise.name)
+                    Text(L10n.exerciseName(id: exercise.exerciseID, fallback: exercise.name))
                         .font(.gym(28, .extraBold, relativeTo: .largeTitle))
                         .foregroundStyle(GymColor.text)
                         .padding(.top, 4)
-                    Pill(L10n.muscle(exercise.muscle))
+                    Pill(L10n.muscle(exercise.muscle.rawValue))
                     VStack(alignment: .leading, spacing: 4) {
-                        if let last = exercise.last {
+                        if let last = SessionFormat.sets(exercise.lastSets, units: store.session.units) {
                             HStack(spacing: 8) {
                                 Text(L10n.last).foregroundStyle(GymColor.textSecondary)
                                 Text(last).foregroundStyle(GymColor.textSecondary)
                             }
                         }
-                        if let next = exercise.next {
+                        if let next = exercise.nextTarget.map({ SessionFormat.target($0, units: store.session.units) })
+                        {
                             HStack(spacing: 8) {
                                 Text(L10n.nextTime).foregroundStyle(GymColor.accent)
                                 Text(next).foregroundStyle(GymColor.text)
@@ -83,7 +86,7 @@ public struct SessionView: View {
                 .font(.gym(14, .extraBold))
                 .foregroundStyle(GymColor.text)
             Spacer()
-            Text(store.elapsed)
+            Text(SessionFormat.clock(store.elapsedSeconds))
                 .font(.gym(22, .extraBold))
                 .monospacedDigit()
                 .foregroundStyle(GymColor.text)
@@ -101,7 +104,7 @@ public struct SessionView: View {
     private var progress: some View {
         VStack(spacing: 10) {
             HStack {
-                Text("\(L10n.exercises) \(store.currentIndex + 1) / \(store.exercises.count)")
+                Text("\(L10n.exercises) \(store.currentIndex + 1) / \(store.session.exercises.count)")
                     .font(.gym(13, .semibold))
                     .tracking(0.6)
                     .foregroundStyle(GymColor.textSecondary)
@@ -118,7 +121,7 @@ public struct SessionView: View {
                 }
             }
             HStack(spacing: 4) {
-                ForEach(store.exercises.indices, id: \.self) { index in
+                ForEach(store.session.exercises.indices, id: \.self) { index in
                     Capsule()
                         .fill(index <= store.currentIndex ? GymColor.text : GymColor.bgRaised2)
                         .frame(height: 4)
@@ -133,7 +136,7 @@ public struct SessionView: View {
                 Button("–15") { store.send(.restAdjustButtonTapped(seconds: -15)) }
                     .buttonStyle(.ghost)
                 Spacer()
-                Text(store.restRemaining == nil ? L10n.setDone : L10n.liveResting)
+                Text(store.restRemainingSeconds == nil ? L10n.setDone : L10n.liveResting)
                     .font(.gym(12, .extraBold))
                     .tracking(2)
                     .textCase(.uppercase)
@@ -153,13 +156,16 @@ public struct SessionView: View {
                         .frame(height: 30)
                     HStack(alignment: .bottom) {
                         VStack(alignment: .leading, spacing: 2) {
-                            Text(store.elapsed).font(.gym(22, .extraBold)).foregroundStyle(GymColor.text)
+                            Text(SessionFormat.clock(store.elapsedSeconds))
+                                .font(.gym(22, .extraBold))
+                                .monospacedDigit()
+                                .foregroundStyle(GymColor.text)
                             Text(L10n.elapsedCaps).font(.gym(11, .bold)).tracking(1.2).foregroundStyle(
                                 GymColor.textSecondary)
                         }
                         Spacer()
                         VStack(spacing: 0) {
-                            Text(store.restRemaining ?? "–")
+                            Text(store.restRemainingSeconds.map(SessionFormat.clock) ?? "–")
                                 .font(.gym(44, .extraBold))
                                 .monospacedDigit()
                                 .foregroundStyle(GymColor.text)
@@ -170,8 +176,9 @@ public struct SessionView: View {
                         }
                         Spacer()
                         VStack(alignment: .trailing, spacing: 2) {
-                            Text("\(store.setsDone)/\(store.setsTotal)").font(.gym(22, .extraBold)).foregroundStyle(
-                                GymColor.text)
+                            Text("\(store.session.setsDone)/\(store.session.setsTotal)").font(.gym(22, .extraBold))
+                                .foregroundStyle(
+                                    GymColor.text)
                             Text(L10n.setsCaps).font(.gym(11, .bold)).tracking(1.2).foregroundStyle(
                                 GymColor.textSecondary)
                         }
@@ -186,14 +193,14 @@ public struct SessionView: View {
         }
     }
 
-    private func setTable(_ exercise: SessionExercise) -> some View {
+    private func setTable(_ exercise: LiveSession.Entry) -> some View {
         VStack(spacing: 8) {
             HStack {
                 Text(L10n.setCol).frame(width: 28)
                 Spacer()
                 Text(L10n.repsCol).frame(width: 110)
                 Spacer()
-                Text(L10n.weightCol(store.unit.uppercased())).frame(width: 130)
+                Text(L10n.weightCol(store.session.units.rawValue.uppercased())).frame(width: 130)
                 Spacer()
                 Color.clear.frame(width: 36, height: 1)
             }
@@ -202,7 +209,12 @@ public struct SessionView: View {
             .padding(.horizontal, 10)
             .padding(.top, 12)
             ForEach(Array(exercise.sets.enumerated()), id: \.element.id) { index, set in
-                SetRowView(index: index + 1, set: set) { action in
+                SetRowView(
+                    index: index + 1,
+                    set: set,
+                    weight: SessionFormat.weight(set.weightKg, units: store.session.units),
+                    weightStep: store.weightStep
+                ) { action in
                     switch action {
                     case let .reps(delta): store.send(.repsChanged(setID: set.id, delta: delta))
                     case let .weight(delta): store.send(.weightChanged(setID: set.id, delta: delta))
@@ -224,7 +236,7 @@ public struct SessionView: View {
                     .buttonStyle(.ghost)
                 Spacer()
             }
-            if store.currentIndex < store.exercises.count - 1 {
+            if store.currentIndex < store.session.exercises.count - 1 {
                 Button(L10n.nextExercise.titleCased) { store.send(.nextExerciseButtonTapped) }
                     .buttonStyle(.primary)
             }
@@ -237,7 +249,7 @@ public struct SessionView: View {
     private var overview: some View {
         NavigationStack {
             List {
-                ForEach(Array(store.exercises.enumerated()), id: \.element.id) { index, exercise in
+                ForEach(Array(store.session.exercises.enumerated()), id: \.element.id) { index, exercise in
                     Button {
                         store.send(.exerciseSelected(index: index))
                     } label: {
@@ -246,10 +258,12 @@ public struct SessionView: View {
                                 .frame(width: 48, height: 48)
                                 .background(GymColor.bgRaised2, in: .rect(cornerRadius: 12))
                             VStack(alignment: .leading, spacing: 2) {
-                                Text(exercise.name).font(.gym(15, .bold)).foregroundStyle(GymColor.text)
+                                Text(L10n.exerciseName(id: exercise.exerciseID, fallback: exercise.name))
+                                    .font(.gym(15, .bold))
+                                    .foregroundStyle(GymColor.text)
                                 Text(
                                     L10n.setsDoneOf(
-                                        done: exercise.sets.filter(\.done).count, total: exercise.sets.count)
+                                        done: exercise.sets.count(where: \.isCompleted), total: exercise.sets.count)
                                 )
                                 .font(.gym(12.5, .medium))
                                 .foregroundStyle(GymColor.textSecondary)
@@ -280,7 +294,10 @@ struct SetRowView: View {
     enum Change { case reps(Int), weight(Double), done }
 
     let index: Int
-    let set: SessionSet
+    let set: WorkoutSet
+    /// The set's weight in the user's unit, ready to show.
+    let weight: String
+    let weightStep: Double
     let onChange: (Change) -> Void
 
     var body: some View {
@@ -296,19 +313,18 @@ struct SetRowView: View {
                 onChange(.reps(1))
             }
             Spacer()
-            StepperControl(set.weight.formatted(.number.precision(.fractionLength(0...1))), fontSize: 17, minWidth: 44)
-            {
-                onChange(.weight(-2.5))
+            StepperControl(weight, fontSize: 17, minWidth: 44) {
+                onChange(.weight(-weightStep))
             } onIncrement: {
-                onChange(.weight(2.5))
+                onChange(.weight(weightStep))
             }
             Spacer()
             Button {
                 onChange(.done)
             } label: {
                 ZStack {
-                    Circle().strokeBorder(set.done ? GymColor.sage : GymColor.textTertiary, lineWidth: 2)
-                    if set.done {
+                    Circle().strokeBorder(set.isCompleted ? GymColor.sage : GymColor.textTertiary, lineWidth: 2)
+                    if set.isCompleted {
                         Circle().fill(GymColor.sage)
                         GymIcon(.check, weight: .bold, size: 15).foregroundStyle(.white)
                     }
@@ -317,12 +333,12 @@ struct SetRowView: View {
             }
             .buttonStyle(.pressable(scale: 0.88))
             .accessibilityLabel(L10n.markSet(index))
-            .accessibilityAddTraits(set.done ? .isSelected : [])
+            .accessibilityAddTraits(set.isCompleted ? .isSelected : [])
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 18)
-        .background(set.done ? GymColor.sageSoft : .clear, in: .rect(cornerRadius: 18))
-        .sensoryFeedback(.success, trigger: set.done) { _, new in new }
+        .background(set.isCompleted ? GymColor.sageSoft : .clear, in: .rect(cornerRadius: 18))
+        .sensoryFeedback(.success, trigger: set.isCompleted) { _, new in new }
     }
 }
 
@@ -383,24 +399,25 @@ struct SessionSummaryView: View {
             VStack(spacing: 22) {
                 Kicker(L10n.sessionComplete, color: GymColor.sage, size: 13)
                     .padding(.top, 40)
-                if let summary = store.summary {
+                if let summary = store.finished {
+                    let volume = SessionFormat.volume(summary.volumeKg, units: store.session.units)
                     HStack(spacing: 12) {
-                        StatBlock(L10n.duration, value: summary.duration)
+                        StatBlock(L10n.duration, value: SessionFormat.duration(summary.durationSeconds))
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .softCard(padding: 18, radius: 22)
-                        StatBlock(L10n.volume, value: summary.volume, unit: summary.volumeUnit)
+                        StatBlock(L10n.volume, value: volume.value, unit: volume.unit)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .softCard(padding: 18, radius: 22)
                     }
-                    if summary.prCount > 0 {
+                    if summary.recordCount > 0 {
                         HStack {
                             GymIcon(.trophy, weight: .fill, size: 20).foregroundStyle(GymColor.brass)
-                            Text(L10n.prCount(summary.prCount)).font(.gym(16, .bold)).foregroundStyle(GymColor.text)
+                            Text(L10n.prCount(summary.recordCount)).font(.gym(16, .bold)).foregroundStyle(GymColor.text)
                             Spacer()
                         }
                         .softCard(padding: 18, radius: 22)
                     }
-                    if let vs = summary.vsLastTime {
+                    if let vs = SessionFormat.change(from: summary.previousVolumeKg, to: summary.volumeKg) {
                         VStack(alignment: .leading, spacing: 6) {
                             Kicker(L10n.vsLastTime, size: 11, spacing: 1.5)
                             Text(vs).font(.gym(15, .semibold)).foregroundStyle(GymColor.text)
@@ -426,5 +443,24 @@ struct SessionSummaryView: View {
 }
 
 #Preview {
-    SessionView(store: Store(initialState: Session.State()) { Session() })
+    SessionView(store: previewStore())
+}
+
+/// A store on the preview database with the Push routine under way.
+@MainActor
+private func previewStore() -> StoreOf<Session> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+        // swiftlint:disable:next force_try
+        try! $0.defaultDatabase.write { db in
+            let routineID = try Routine.order(by: \.position).select(\.id).fetchOne(db)
+            if let routineID {
+                try LiveWorkout.start(db, routineID: routineID, now: Date())
+            }
+        }
+    }
+    return Store(initialState: Session.State()) { Session() }
 }

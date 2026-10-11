@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -15,18 +16,22 @@ public struct StartWorkoutView: View {
             VStack(alignment: .leading, spacing: 16) {
                 SheetTitle(
                     store.isLogging ? L10n.logTitle : L10n.startTitle,
-                    subtitle: store.isLogging ? L10n.logHint : store.dateTitle
+                    subtitle: store.isLogging ? L10n.logHint : dateTitle
                 )
                 .padding(.top, 8)
                 SegToggle([(false, L10n.startTitle), (true, L10n.logTitle)], selection: $store.isLogging, fontSize: 13)
-                if let today = store.todayRoutine {
+                if store.options.hasWorkoutInProgress {
+                    Button(L10n.resumeWorkout.titleCased) { store.send(.resumeButtonTapped) }
+                        .buttonStyle(.primary)
+                }
+                if let today = store.options.today {
                     Kicker(L10n.todaysRoutine, size: 11, spacing: 2)
                     routineRow(today, prominent: true)
                 }
-                if !store.routines.isEmpty {
+                if !store.options.routines.isEmpty {
                     Kicker(L10n.yourRoutines, size: 11, spacing: 2)
                     VStack(spacing: 8) {
-                        ForEach(store.routines) { routineRow($0, prominent: false) }
+                        ForEach(store.options.routines) { routineRow($0, prominent: false) }
                     }
                 }
                 Kicker(L10n.orStartFrom, size: 11, spacing: 2)
@@ -40,6 +45,12 @@ public struct StartWorkoutView: View {
         .gymBackground()
         .presentationDetents([.medium, .large])
         .presentationDragIndicator(.visible)
+        .task { await store.send(.task).finish() }
+    }
+
+    /// "Saturday, Sep 19".
+    private var dateTitle: String {
+        store.today?.formatted(.dateTime.weekday(.wide).month(.abbreviated).day()) ?? " "
     }
 
     private func routineRow(_ row: StartRoutineRow, prominent: Bool) -> some View {
@@ -86,6 +97,18 @@ public struct StartWorkoutView: View {
 
 #Preview {
     Color.clear.sheet(isPresented: .constant(true)) {
-        StartWorkoutView(store: Store(initialState: StartWorkout.State()) { StartWorkout() })
+        StartWorkoutView(store: previewStore())
     }
+}
+
+/// A store backed by a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<StartWorkout> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: StartWorkout.State()) { StartWorkout() }
 }
