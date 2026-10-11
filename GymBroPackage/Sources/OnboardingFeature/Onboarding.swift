@@ -79,7 +79,7 @@ public struct Onboarding: Sendable {
         let places = Place.Preset.all
             .filter { state.places.contains($0.id) }
             .map { (name: L10n.placePresetName($0.id), equipment: $0.equipment) }
-        return .run { [now, calendar, dismiss] _ in
+        return .run { [profile, units, places, now, calendar, dismiss] _ in
             await withErrorReporting {
                 try await database.write { db in
                     for place in places {
