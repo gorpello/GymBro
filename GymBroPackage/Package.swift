@@ -162,10 +162,12 @@ let package = Package(
     .target(
       name: "ExercisesFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -341,6 +343,17 @@ let package = Package(
       ]
     ),
     .testTarget(
+      name: "ExercisesFeatureTests",
+      dependencies: [
+        "ExercisesFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__",
+      ]
+    ),
+    .testTarget(
       name: "HomeFeatureTests",
       dependencies: [
         "HomeFeature",
@@ -363,19 +376,9 @@ let package = Package(
       ]
     ),
     .testTarget(
-      name: "ProgressFeatureTests",
-      dependencies: [
-        "ProgressFeature",
-        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
-        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
-      ],
-      exclude: [
-        "__Snapshots__"
-      ]
-    ),
-    .testTarget(
       name: "SessionFeatureTests",
       dependencies: [
+        "ProgressFeature",
         "SessionFeature",
         "TrainFeature",
         .product(name: "DependenciesTestSupport", package: "swift-dependencies"),

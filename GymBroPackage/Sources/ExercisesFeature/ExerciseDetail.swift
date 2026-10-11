@@ -1,116 +1,166 @@
 import ComposableArchitecture
+import Database
+import Foundation
+import L10n
 import Routing
+import SQLiteData
 
 /// One exercise: live demo, muscles, next-time target, record, goal, history, notes, steps,
-/// similar moves and per-exercise settings.
+/// similar moves and per-exercise settings. Read from the database (see `ExerciseOverview`);
+/// every setting is saved as soon as it changes.
 @Reducer
 public struct ExerciseDetail {
     @ObservableState
     public struct State: Equatable {
-        public let id: String
+        @Presents public var alert: AlertState<Action.Alert>?
+        @Presents public var editor: ExerciseEditor.State?
+        public let id: Exercise.ID
+        @ObservationStateIgnored
+        @Fetch public var overview = ExerciseOverview()
 
-        public var art: String = "bench-press"
-        public var autoProgress: Bool = true
-        public var autoWarmup: Bool = false
-        public var equipment: String = "Barbell"
-        public var goal: String? = "100 kg × 5"
-        public var goalProgress: Double = 0.8
-        public var history: [HistoryRow] = [
-            .init(id: "1", date: "Sep 19", sets: 4, topWeight: "92.5 kg", volume: "2.6 t"),
-            .init(id: "2", date: "Sep 18", sets: 4, topWeight: "92.5 kg", volume: "2.6 t"),
-            .init(id: "3", date: "Sep 16", sets: 4, topWeight: "91 kg", volume: "2.5 t"),
-            .init(id: "4", date: "Sep 4", sets: 4, topWeight: "89.5 kg", volume: "2.5 t"),
-        ]
-        public var name: String = "Barbell Bench Press"
-        public var nextTime: String? = "92.5 kg × 8"
-        public var noteCount: Int = 1
-        public var personalRecord: String? = "92.5 kg"
-        public var personalRecordDate: String = "Sep 19"
-        public var primary: String = "chest"
-        public var restSeconds: Int = 150
-        public var secondary: [String] = ["triceps", "shoulders"]
-        public var similar: [SimilarRow] = [
-            .init(id: "SpYC0Kp", art: "dumbbell-bench-press", name: "Dumbbell Bench Press"),
-            .init(id: "3TZduzM", art: "incline-bench-press", name: "Barbell Incline Bench Press"),
-            .init(id: "x1", art: "smith-machine-bench-press", name: "Smith Machine Bench Press"),
-        ]
-        public var steps: [String] = [
-            "Lie flat on a bench with your feet flat on the ground and your back pressed against the bench.",
-            "Grasp the barbell with an overhand grip slightly wider than shoulder-width apart.",
-            "Lift the barbell off the rack and hold it directly above your chest with your arms fully extended.",
-            "Lower the barbell slowly towards your chest, keeping your elbows tucked in.",
-            "Pause for a moment when the barbell touches your chest.",
-        ]
-        public var suggestInWorkouts: Bool = true
-
-        public init(id: String) {
+        public init(id: Exercise.ID) {
             self.id = id
         }
     }
 
-    public enum Action: BindableAction {
+    public enum Action {
+        case alert(PresentationAction<Alert>)
         case archiveButtonTapped
-        case binding(BindingAction<State>)
+        case autoProgressToggled(Bool)
+        case autoWarmupToggled(Bool)
         case delegate(Delegate)
         case deleteButtonTapped
         case editButtonTapped
+        case editor(PresentationAction<ExerciseEditor.Action>)
         case notesButtonTapped
         case restDecrementButtonTapped
         case restIncrementButtonTapped
-        case similarTapped(id: String)
+        case similarTapped(id: Exercise.ID)
+        case suggestInWorkoutsToggled(Bool)
+        case task
 
+        @CasePathable
+        public enum Alert: Equatable, Sendable {
+            case confirmDeleteButtonTapped
+        }
+
+        @CasePathable
         public enum Delegate {
             case navigate(Route)
         }
     }
 
+    @Dependency(\.defaultDatabase) var database
+    @Dependency(\.dismiss) var dismiss
+
     public init() {}
 
     public var body: some Reducer<State, Action> {
-        BindingReducer()
         Reduce { state, action in
             switch action {
-            case .archiveButtonTapped, .binding, .delegate, .deleteButtonTapped, .editButtonTapped:
+            case .alert(.presented(.confirmDeleteButtonTapped)):
+                return .run { [id = state.id] _ in
+                    await withErrorReporting {
+                        let isDeleted = try await database.write { db in try Exercise.deleteCustom(db, id: id) }
+                        if isDeleted { await dismiss() }
+                    }
+                }
+            case .alert, .delegate, .editor:
+                return .none
+            case .archiveButtonTapped:
+                return write(state) { db, id in
+                    try Exercise.find(id).update { $0.isArchived = !$0.isArchived }.execute(db)
+                }
+            case let .autoProgressToggled(isOn):
+                let stepKg = state.overview.units == .kg ? Progression.defaultStepKg : 5 * WeightUnit.lb.kilograms
+                return editPreference(state) { $0.progressStepKg = isOn ? stepKg : nil }
+            case let .autoWarmupToggled(isOn):
+                return editPreference(state) { $0.autoWarmup = isOn }
+            case .deleteButtonTapped:
+                state.alert = .deleteExercise(name: state.name)
+                return .none
+            case .editButtonTapped:
+                guard let exercise = state.overview.exercise, exercise.isCustom else { return .none }
+                state.editor = ExerciseEditor.State(exercise: exercise)
                 return .none
             case .notesButtonTapped:
                 return .send(.delegate(.navigate(.notes)))
             case .restDecrementButtonTapped:
-                state.restSeconds = max(0, state.restSeconds - 15)
-                return .none
+                let seconds = max(state.restSeconds - AppSettings.restStep, AppSettings.restRange.lowerBound)
+                return editPreference(state) { $0.restSeconds = seconds }
             case .restIncrementButtonTapped:
-                state.restSeconds += 15
-                return .none
+                let seconds = min(state.restSeconds + AppSettings.restStep, AppSettings.restRange.upperBound)
+                return editPreference(state) { $0.restSeconds = seconds }
             case let .similarTapped(id):
                 return .send(.delegate(.navigate(.exerciseDetail(id: id))))
+            case let .suggestInWorkoutsToggled(isOn):
+                return editPreference(state) { $0.isSuggested = isOn }
+            case .task:
+                return .run { [overview = state.$overview, id = state.id] _ in
+                    await withErrorReporting {
+                        try await overview.load(ExerciseOverview.Request(exerciseID: id)).task
+                    }
+                }
+            }
+        }
+        .ifLet(\.$alert, action: \.alert)
+        .ifLet(\.$editor, action: \.editor) {
+            ExerciseEditor()
+        }
+    }
+
+    private func editPreference(
+        _ state: State,
+        _ change: @escaping @Sendable (inout ExercisePreference) -> Void
+    ) -> Effect<Action> {
+        write(state) { db, id in try ExercisePreference.edit(db, exerciseID: id, change) }
+    }
+
+    private func write(
+        _ state: State,
+        _ change: @escaping @Sendable (Database, Exercise.ID) throws -> Void
+    ) -> Effect<Action> {
+        .run { [id = state.id] _ in
+            await withErrorReporting {
+                try await database.write { db in try change(db, id) }
             }
         }
     }
 }
 
-public struct HistoryRow: Equatable, Identifiable, Sendable {
-    public var id: String
-    public var date: String
-    public var sets: Int
-    public var topWeight: String
-    public var volume: String
+extension ExerciseDetail.State {
+    public var name: String { overview.exercise?.name ?? "" }
+    public var isCustom: Bool { overview.exercise?.isCustom ?? false }
+    public var isArchived: Bool { overview.exercise?.isArchived ?? false }
 
-    public init(id: String, date: String, sets: Int, topWeight: String, volume: String) {
-        self.id = id
-        self.date = date
-        self.sets = sets
-        self.topWeight = topWeight
-        self.volume = volume
+    private var preference: ExercisePreference { overview.preference ?? .defaults(for: id) }
+    public var autoProgress: Bool { preference.progressStepKg != nil }
+    public var autoWarmup: Bool { preference.autoWarmup }
+    public var suggestInWorkouts: Bool { preference.isSuggested }
+    /// The exercise's own rest, or the default from Settings; 0 is off.
+    public var restSeconds: Int { preference.restSeconds ?? overview.defaultRestSeconds }
+
+    /// How far the record is towards the goal, 0…1; `nil` without a goal.
+    public var goalProgress: Double? {
+        guard let goalKg = preference.goalTargetKg, goalKg > 0 else { return nil }
+        guard let record = overview.record, record.kind == .weight else { return 0 }
+        return min(record.best / goalKg, 1)
     }
 }
 
-public struct SimilarRow: Equatable, Identifiable, Sendable {
-    public var id: String
-    public var art: String
-    public var name: String
-
-    public init(id: String, art: String, name: String) {
-        self.id = id
-        self.art = art
-        self.name = name
+extension AlertState where Action == ExerciseDetail.Action.Alert {
+    public static func deleteExercise(name: String) -> Self {
+        AlertState {
+            TextState(L10n.deleteExerciseTitle)
+        } actions: {
+            ButtonState(role: .destructive, action: .confirmDeleteButtonTapped) {
+                TextState(L10n.delete)
+            }
+            ButtonState(role: .cancel) {
+                TextState(L10n.cancel)
+            }
+        } message: {
+            TextState(L10n.deleteExerciseBody(name))
+        }
     }
 }

@@ -434,6 +434,15 @@ extension DependencyValues {
             )
             .execute(db)
         }
+        migrator.registerMigration("Add exercise suggestions") { db in
+            try #sql(
+                """
+                ALTER TABLE "exercisePreferences"
+                ADD COLUMN "isSuggested" INTEGER NOT NULL ON CONFLICT REPLACE DEFAULT 1
+                """
+            )
+            .execute(db)
+        }
         try migrator.migrate(database)
         try database.write { db in
             try Exercise.seedCatalog(db)

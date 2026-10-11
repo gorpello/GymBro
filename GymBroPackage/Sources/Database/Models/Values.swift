@@ -32,10 +32,10 @@ public struct Muscle: Codable, Hashable, QueryBindable, RawRepresentable, Sendab
     public static let trapezius = Self(rawValue: "trapezius")
     public static let triceps = Self(rawValue: "triceps")
 
-    /// Every muscle on the map.
+    /// Every muscle on the map, in the order pickers and the library list them (`kMuscles`).
     public static let all: [Self] = [
-        .abdomen, .back, .biceps, .calves, .chest, .forearm, .glutes, .hamstrings, .obliques, .quads, .shoulders,
-        .trapezius, .triceps,
+        .chest, .shoulders, .biceps, .abdomen, .obliques, .quads, .forearm, .trapezius, .back, .triceps, .glutes,
+        .hamstrings, .calves,
     ]
 }
 
@@ -53,6 +53,11 @@ public struct Equipment: Hashable, QueryBindable, RawRepresentable, Sendable {
     public static let other = Self(rawValue: "Other")
     public static let rings = Self(rawValue: "Rings")
     public static let weighted = Self(rawValue: "Weighted")
+
+    /// In the order pickers list them (`kEquipment`).
+    public static let all: [Self] = [
+        .barbell, .dumbbell, .cable, .machine, .bodyweight, .weighted, .band, .kettlebell, .rings, .other,
+    ]
 }
 
 public struct Difficulty: Hashable, QueryBindable, RawRepresentable, Sendable {
@@ -62,6 +67,8 @@ public struct Difficulty: Hashable, QueryBindable, RawRepresentable, Sendable {
     public static let beginner = Self(rawValue: "Beginner")
     public static let intermediate = Self(rawValue: "Intermediate")
     public static let advanced = Self(rawValue: "Advanced")
+
+    public static let all: [Self] = [.beginner, .intermediate, .advanced]
 }
 
 /// How an exercise is logged: weight × reps, distance and time, or time only.

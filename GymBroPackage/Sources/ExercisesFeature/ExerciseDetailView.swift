@@ -1,4 +1,5 @@
 import ComposableArchitecture
+import Database
 import DesignSystem
 import L10n
 import SwiftUI
@@ -10,18 +11,29 @@ public struct ExerciseDetailView: View {
         self.store = store
     }
 
+    private var overview: ExerciseOverview { store.overview }
+    private var units: WeightUnit { overview.units }
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
-                ExerciseArtView(art: store.art, live: true)
+                if store.isArchived {
+                    Text(L10n.archivedBanner)
+                        .font(.gym(13, .semibold))
+                        .foregroundStyle(GymColor.textSecondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(14)
+                        .background(GymColor.bgRaised, in: .rect(cornerRadius: 16))
+                }
+                ExerciseArtView(art: overview.exercise?.art ?? "", live: true)
                     .frame(height: 240)
                     .frame(maxWidth: .infinity)
                     .softCard(padding: 0, radius: 26, fill: GymColor.bgRaised2)
                 muscles
-                if let next = store.nextTime {
+                if let target = overview.nextTarget {
                     HStack(alignment: .firstTextBaseline, spacing: 6) {
                         Text(L10n.nextTime).foregroundStyle(GymColor.accent)
-                        Text(next).foregroundStyle(GymColor.text)
+                        Text(ExerciseFormat.target(target, units: units)).foregroundStyle(GymColor.text)
                     }
                     .font(.gym(14, .semibold))
                 }
@@ -36,12 +48,25 @@ public struct ExerciseDetailView: View {
             .padding(.bottom, 32)
         }
         .gymScreen(store.name)
+        .task { await store.send(.task).finish() }
+        .alert($store.scope(state: \.alert, action: \.alert))
+        .sheet(item: $store.scope(state: \.editor, action: \.editor)) { editorStore in
+            NavigationStack {
+                ExerciseEditorView(store: editorStore)
+            }
+        }
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Menu {
-                    Button(L10n.editExercise) { store.send(.editButtonTapped) }
-                    Button(L10n.archiveExercise) { store.send(.archiveButtonTapped) }
-                    Button(L10n.delete, role: .destructive) { store.send(.deleteButtonTapped) }
+                    if store.isCustom {
+                        Button(L10n.editExercise) { store.send(.editButtonTapped) }
+                    }
+                    Button(store.isArchived ? L10n.restoreExercise : L10n.archiveExercise) {
+                        store.send(.archiveButtonTapped)
+                    }
+                    if store.isCustom {
+                        Button(L10n.delete, role: .destructive) { store.send(.deleteButtonTapped) }
+                    }
                 } label: {
                     GymIcon(.dotsThreeVertical, weight: .bold, size: 18)
                 }
@@ -51,9 +76,11 @@ public struct ExerciseDetailView: View {
 
     private var muscles: some View {
         FlowLayout {
-            Pill(L10n.muscle(store.primary), selected: true)
-            ForEach(store.secondary, id: \.self) { Pill(L10n.muscle($0)) }
-            Pill(L10n.equipment(store.equipment))
+            if let exercise = overview.exercise {
+                Pill(L10n.muscle(exercise.primaryMuscle.rawValue), selected: true)
+                ForEach(exercise.secondaryMuscles, id: \.self) { Pill(L10n.muscle($0.rawValue)) }
+                Pill(L10n.equipment(exercise.equipment.rawValue))
+            }
         }
     }
 
@@ -61,18 +88,20 @@ public struct ExerciseDetailView: View {
         HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 8) {
                 Kicker(L10n.personalRecord, size: 11, spacing: 1.5)
-                StatValue(store.personalRecord ?? "–", size: 24)
-                Text(store.personalRecordDate)
-                    .font(.gym(12, .medium))
-                    .foregroundStyle(GymColor.textSecondary)
+                StatValue(overview.record.map { ExerciseFormat.record($0, units: units) } ?? "–", size: 24)
+                if let record = overview.record {
+                    Text(UnitFormat.shortDate(record.date))
+                        .font(.gym(12, .medium))
+                        .foregroundStyle(GymColor.textSecondary)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .softCard(padding: 18, radius: 22)
             VStack(alignment: .leading, spacing: 8) {
                 Kicker(L10n.goal, size: 11, spacing: 1.5)
-                if let goal = store.goal {
-                    StatValue(goal, size: 24)
-                    ProgressView(value: store.goalProgress)
+                if let goalKg = overview.preference?.goalTargetKg, let progress = store.goalProgress {
+                    StatValue(UnitFormat.weightLabel(goalKg, units: units), size: 24)
+                    ProgressView(value: progress)
                         .tint(GymColor.accent)
                 } else {
                     Text(L10n.goalSet)
@@ -89,28 +118,28 @@ public struct ExerciseDetailView: View {
         VStack(alignment: .leading, spacing: 0) {
             SectionHeader(L10n.history)
                 .padding(.bottom, 8)
-            if store.history.isEmpty {
+            if overview.history.isEmpty {
                 Text(L10n.noHistory)
                     .font(.gym(13, .medium))
                     .foregroundStyle(GymColor.textSecondary)
             }
-            ForEach(Array(store.history.enumerated()), id: \.element.id) { index, row in
+            ForEach(Array(overview.history.enumerated()), id: \.element.id) { index, row in
                 if index > 0 { Rectangle().fill(GymColor.border).frame(height: 1) }
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(row.date)
+                        Text(UnitFormat.shortDate(row.date))
                             .font(.gym(16, .bold))
                             .foregroundStyle(GymColor.text)
-                        Text(L10n.setCount(row.sets))
+                        Text(L10n.setCount(row.setCount))
                             .font(.gym(13, .medium))
                             .foregroundStyle(GymColor.textSecondary)
                     }
                     Spacer()
                     VStack(alignment: .trailing, spacing: 2) {
-                        Text(row.topWeight)
+                        Text(UnitFormat.weightLabel(row.topWeightKg, units: units))
                             .font(.gym(18, .extraBold))
                             .foregroundStyle(GymColor.text)
-                        Text(L10n.volumeSuffix(row.volume))
+                        Text(L10n.volumeSuffix(ExerciseFormat.volume(row.volumeKg, units: units)))
                             .font(.gym(13, .medium))
                             .foregroundStyle(GymColor.textSecondary)
                     }
@@ -131,7 +160,7 @@ public struct ExerciseDetailView: View {
                     Text(L10n.notes.titleCased)
                         .font(.gym(15, .semibold))
                         .foregroundStyle(GymColor.text)
-                    Text(L10n.noteCount(store.noteCount))
+                    Text(L10n.noteCount(overview.noteCount))
                         .font(.gym(12.5, .medium))
                         .foregroundStyle(GymColor.textSecondary)
                 }
@@ -148,12 +177,13 @@ public struct ExerciseDetailView: View {
     private var steps: some View {
         VStack(alignment: .leading, spacing: 12) {
             SectionHeader(L10n.howTo)
-            if store.steps.isEmpty {
+            let steps = overview.exercise?.steps ?? []
+            if steps.isEmpty {
                 Text(L10n.noStepsYet)
                     .font(.gym(13, .medium))
                     .foregroundStyle(GymColor.textSecondary)
             }
-            ForEach(Array(store.steps.enumerated()), id: \.offset) { index, step in
+            ForEach(Array(steps.enumerated()), id: \.offset) { index, step in
                 HStack(alignment: .firstTextBaseline, spacing: 14) {
                     Text("\(index + 1)")
                         .font(.gym(12, .extraBold))
@@ -171,12 +201,12 @@ public struct ExerciseDetailView: View {
 
     @ViewBuilder
     private var similar: some View {
-        if !store.similar.isEmpty {
+        if !overview.similar.isEmpty {
             VStack(alignment: .leading, spacing: 12) {
                 SectionHeader(L10n.similar)
                 ScrollView(.horizontal) {
                     HStack(spacing: 12) {
-                        ForEach(store.similar) { row in
+                        ForEach(overview.similar) { row in
                             Button {
                                 store.send(.similarTapped(id: row.id))
                             } label: {
@@ -203,17 +233,22 @@ public struct ExerciseDetailView: View {
     private var settings: some View {
         GroupCard {
             OptionRow(L10n.suggestInWorkouts, detail: L10n.suggestInWorkoutsHint) {
-                Toggle(L10n.suggestInWorkouts, isOn: $store.suggestInWorkouts).labelsHidden().toggleStyle(.gym)
+                Toggle(
+                    L10n.suggestInWorkouts,
+                    isOn: $store.suggestInWorkouts.sending(\.suggestInWorkoutsToggled)
+                ).labelsHidden().toggleStyle(.gym)
             }
             OptionRow(L10n.autoWarmup, detail: L10n.autoWarmupHint) {
-                Toggle(L10n.autoWarmup, isOn: $store.autoWarmup).labelsHidden().toggleStyle(.gym)
+                Toggle(L10n.autoWarmup, isOn: $store.autoWarmup.sending(\.autoWarmupToggled)).labelsHidden()
+                    .toggleStyle(.gym)
             }
             OptionRow(L10n.autoProgress) {
-                Toggle(L10n.autoProgress, isOn: $store.autoProgress).labelsHidden().toggleStyle(.gym)
+                Toggle(L10n.autoProgress, isOn: $store.autoProgress.sending(\.autoProgressToggled)).labelsHidden()
+                    .toggleStyle(.gym)
             }
             OptionRow(L10n.restForExercise) {
                 StepperControl(
-                    store.restSeconds == 0 ? L10n.restOff : "\(store.restSeconds)s",
+                    ExerciseFormat.rest(store.restSeconds),
                     fontSize: 14,
                     onDecrement: { store.send(.restDecrementButtonTapped) },
                     onIncrement: { store.send(.restIncrementButtonTapped) }
@@ -225,6 +260,18 @@ public struct ExerciseDetailView: View {
 
 #Preview {
     NavigationStack {
-        ExerciseDetailView(store: Store(initialState: ExerciseDetail.State(id: "EIeI8Vf")) { ExerciseDetail() })
+        ExerciseDetailView(store: previewStore())
     }
+}
+
+/// The bench press, from a database seeded with a month of training.
+@MainActor
+private func previewStore() -> StoreOf<ExerciseDetail> {
+    prepareDependencies {
+        // swiftlint:disable:next force_try
+        try! $0.bootstrapDatabase()
+        // swiftlint:disable:next force_try
+        try! $0.seedDatabaseForPreviews()
+    }
+    return Store(initialState: ExerciseDetail.State(id: "EIeI8Vf")) { ExerciseDetail() }
 }

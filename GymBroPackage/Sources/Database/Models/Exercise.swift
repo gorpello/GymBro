@@ -32,7 +32,8 @@ public struct ExercisePreference: Hashable, Identifiable, Sendable {
     public var modeOverride: ExerciseMode?
     /// 15…600 seconds; `nil` uses the global rest setting.
     public var restSeconds: Int?
-    /// Weight added when the exercise gets easy; `nil` uses the default step.
+    /// Weight added once every set hits its reps; `nil` turns auto-progression off, so the next
+    /// workout repeats the last weights.
     public var progressStepKg: Double?
     public var autoWarmup = false
     /// `nil` decides automatically from the exercise's equipment.
@@ -49,6 +50,8 @@ public struct ExercisePreference: Hashable, Identifiable, Sendable {
     public var videoMarks: [Int: Int] = [:]
     public var goalTargetKg: Double?
     public var goalDueDate: Date?
+    /// Offered when Home and Train recommend exercises.
+    public var isSuggested = true
 
     public var id: Exercise.ID { exerciseID }
 }
