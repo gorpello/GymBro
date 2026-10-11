@@ -253,10 +253,12 @@ let package = Package(
     .target(
       name: "SessionFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
     .target(
@@ -307,10 +309,12 @@ let package = Package(
     .target(
       name: "TrainFeature",
       dependencies: [
+        "Database",
         "DesignSystem",
         "L10n",
         "Routing",
         .product(name: "ComposableArchitecture", package: "swift-composable-architecture"),
+        .product(name: "SQLiteData", package: "sqlite-data"),
       ]
     ),
 
@@ -349,6 +353,18 @@ let package = Package(
       name: "ProfileFeatureTests",
       dependencies: [
         "ProfileFeature",
+        .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
+        .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
+      ],
+      exclude: [
+        "__Snapshots__",
+      ]
+    ),
+    .testTarget(
+      name: "SessionFeatureTests",
+      dependencies: [
+        "SessionFeature",
+        "TrainFeature",
         .product(name: "DependenciesTestSupport", package: "swift-dependencies"),
         .product(name: "SnapshotTesting", package: "swift-snapshot-testing"),
       ],

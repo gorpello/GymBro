@@ -1,10 +1,13 @@
 import ComposableArchitecture
+import Database
+import Foundation
 import Routing
+import SQLiteData
 
 /// Quick workout builder. Step 1: tap muscles on the body map (or pick warm-up / cardio).
 /// Step 2: review the suggested exercises and start.
 @Reducer
-public struct Train {
+public struct Train: Sendable {
     @ObservableState
     public struct State: Equatable {
         public var equipmentFilter: String?
@@ -50,11 +53,14 @@ public struct Train {
         case startButtonTapped
         case warmupButtonTapped
 
+        @CasePathable
         public enum Delegate {
             case navigate(Route)
         }
     }
 
+    @Dependency(\.defaultDatabase) var database
+    @Dependency(\.date.now) var now
     @Dependency(\.dismiss) var dismiss
 
     public init() {}
@@ -85,7 +91,16 @@ public struct Train {
                 if state.selectedMuscles.remove(id) == nil { state.selectedMuscles.insert(id) }
                 return .none
             case .startButtonTapped:
-                return .send(.delegate(.navigate(.session)))
+                let exerciseIDs = (state.suggestions + state.moreOptions).map(\.id).filter(state.picked.contains)
+                guard !exerciseIDs.isEmpty else { return .none }
+                return .run { [now] send in
+                    await withErrorReporting {
+                        try await database.write { db in
+                            try LiveWorkout.start(db, exerciseIDs: exerciseIDs, now: now)
+                        }
+                        await send(.delegate(.navigate(.session)))
+                    }
+                }
             }
         }
     }
